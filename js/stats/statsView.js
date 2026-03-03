@@ -1,9 +1,21 @@
 import { getStats, resetStats } from "./stats.js";
 
 export function renderStats() {
-    // this function will render the stats to the DOM by using the getStats function to retrieve the stats from the state and then updating the appropriate elements in the DOM with the retrieved stats
+    const el = document.getElementById("stats-view");
+    const s = getStats();
+    el.innerHTML = `
+    <p>Games: ${s.gamesPlayed}</p>
+    <p>Wins: ${s.wins}</p>
+    <p>Losses: ${s.losses}</p>
+    <p>W/L: ${s.ratio}</p>
+    `;
 }
 
 export function initStatsView() {
-    // this function will initialize the stats view and set up event listeners for the stats controls, such as a reset button that will call the resetStats function when clicked
+    document.getElementById("reset-stats").addEventListener("click", () => {
+    resetStats();
+    renderStats();
+    });
+
+    renderStats();
 }

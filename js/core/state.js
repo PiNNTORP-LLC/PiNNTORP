@@ -4,5 +4,12 @@ export const state = {
 };
 
 export function replaceState(nextState) {
-    // this function will replace the current state with the nextState
+    if (!nextState) return;
+
+    state.friends = Array.isArray(nextState.friends) ? nextState.friends : [];
+    state.stats = {
+        wins: Number(nextState.stats?.wins) || 0,
+        losses: Number(nextState.stats?.losses) || 0,
+        gamesPlayed: Number(nextState.stats?.gamesPlayed) || 0
+    };
 }

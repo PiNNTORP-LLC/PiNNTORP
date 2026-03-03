@@ -1,9 +1,38 @@
 import { addFriend, getFriends, removeFriend } from "./friends.js";
 
 function renderFriends(list) {
-    // this function will render the list of friends in the provided list element by using the getFriends function to retrieve the list of friends from the state
+    list.innerHTML = "";
+    getFriends().forEach((friend) => {
+    const item = document.createElement("li");
+    const name = document.createElement("span");
+    const del = document.createElement("button");
+
+    name.textContent = friend;
+    del.type = "button";
+    del.textContent = "Delete";
+    del.addEventListener("click", () => {
+        removeFriend(friend);
+        renderFriends(list);
+    });
+
+    item.appendChild(name);
+    item.appendChild(del);
+    list.appendChild(item);
+    });
 }
 
 export function initFriendsView() {
-    // this function will initialize the friends view and set up event listeners for the friends controls
-}
+    const list = document.getElementById("friends-list");
+    const form = document.getElementById("friend-form");
+    const input = document.getElementById("friend-name");
+
+    renderFriends(list);
+
+    form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    if (!addFriend(input.value)) return;
+
+    input.value = "";
+    renderFriends(list);
+    });
+    }

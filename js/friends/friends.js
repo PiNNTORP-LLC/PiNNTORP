@@ -6,9 +6,19 @@ export function getFriends() {
 }
 
 export function addFriend(name) {
-    // this function will add a friend to the state by name and save the updated state to localStorage
+    const value = name.trim();
+    if (!value) return false;
+    if (state.friends.some((f) => f.toLowerCase() === value.toLowerCase())) return false;
+
+    state.friends.push(value);
+    saveState(state);
+    return true;
 }
 
 export function removeFriend(name) {
-    // this function will remove a friend from the state by name and save the updated state to localStorage
+    const next = state.friends.filter((f) => f !== name);
+    if (next.length === state.friends.length) return;
+
+    state.friends = next;
+    saveState(state);
 }
