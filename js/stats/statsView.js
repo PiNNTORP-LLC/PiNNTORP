@@ -7,6 +7,7 @@ export function renderStats() {
     <p>Games: ${s.gamesPlayed}</p>
     <p>Wins: ${s.wins}</p>
     <p>Losses: ${s.losses}</p>
+    <p>Profit: ${s.profit}</p>
     <p>W/L: ${s.ratio}</p>
     `;
 }

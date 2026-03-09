@@ -4,10 +4,11 @@ import { saveState } from "../core/storage.js";
 export function playRound(guess) {
     const roll = Math.floor(Math.random() * 3) + 1;
     const won = Number(guess) === roll;
+    const user = state.users[state.currentUser]
 
-    state.stats.gamesPlayed += 1;
-    if (won) state.stats.wins += 1;
-    else state.stats.losses += 1;
+    user.gamesPlayed += 1;
+    if (won) user.wins += 1, user.profit += 10;
+    else user.losses += 1, user.profit -= 5;
 
     saveState(state);
     return { guess: Number(guess), roll, won };
