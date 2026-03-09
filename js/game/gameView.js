@@ -1,6 +1,8 @@
-import { playRound } from "./game.js";
+import { getGameApi } from "./game.js";
 import { renderStats } from "../stats/statsView.js";
-import { playSlot } from "./game.js";
+
+const guessGameApi = getGameApi("guess");
+const slotGameApi = getGameApi("slots");
 
 export function initGameView() {
     const controls = document.getElementById("game-controls");
@@ -11,7 +13,7 @@ export function initGameView() {
     button.type = "button";
     button.textContent = String(value);
     button.addEventListener("click", () => {
-        const round = playRound(value);
+        const round = guessGameApi.play(value);
         result.textContent = round.won
         ? `Win: guessed ${round.guess}, rolled ${round.roll}`
         : `Loss: guessed ${round.guess}, rolled ${round.roll}`;
@@ -28,7 +30,7 @@ export function initSlotView() {
     const thirdNum = document.getElementById("third-num");
 
     button.addEventListener("click", () => {
-        const slotNums = playSlot();
+        const slotNums = slotGameApi.play();
         firstNum.textContent = String(slotNums[0]);
         secNum.textContent = String(slotNums[1]);
         thirdNum.textContent = String(slotNums[2]);
