@@ -5,7 +5,7 @@ function createUserTemplate() {
         losses: 0,
         profit: 0,
         friends: [],
-        // favoriteGames: []
+        favoriteGames: []
     };
 }
 
