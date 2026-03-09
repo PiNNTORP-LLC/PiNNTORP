@@ -27,6 +27,26 @@ CATEGORY_PROGRESS_BY_DAY: Dict[int, List[CategoryProgress]] = {
     0: [
         CategoryProgress("Game Mechanics", 14, 0),
         CategoryProgress("Friends List", 4, 0),
+    ],
+    1: [
+        CategoryProgress("Game Mechanics", 14, 0),
+        CategoryProgress("Friends List", 4, 10),
+    ],
+    2: [
+        CategoryProgress("Game Mechanics", 14, 0),
+        CategoryProgress("Friends List", 4, 10),
+    ],
+    3: [
+        CategoryProgress("Game Mechanics", 14, 10),
+        CategoryProgress("Friends List", 4, 10),
+    ],
+    4: [
+        CategoryProgress("Game Mechanics", 14, 20),
+        CategoryProgress("Friends List", 4, 100),
+    ],
+    5: [
+        CategoryProgress("Game Mechanics", 14, 90),
+        CategoryProgress("Friends List", 4, 100),
     ]
 }
 

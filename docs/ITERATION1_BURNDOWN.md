@@ -9,11 +9,11 @@ Iteration 1 length: **14d**
 | Day | Date | Ideal Remaining | Actual Remaining | Progress / Context |
 |---:|---|---:|---:|---|
 | 0 | 2026-03-03 | 18.0 | 18.0 | Lab 6: customer meeting, running skeleton shown, board and burndown presented |
-| 1 | 2026-03-04 | 16.6 | - | Iteration 1 board finalized: tasks defined, estimates assigned, and initial progress tracked |
-| 2 | 2026-03-05 | 15.2 | - | Repo workflow validated, main/develop/feature branches and initial tracking are in place |
-| 3 | 2026-03-06 | 13.8 | - | Core gameplay development in progress (logic + UI behavior) |
-| 4 | 2026-03-07 | 12.5 | - | Friends list development in progress (add/list/delete + persistence checks) |
-| 5 | 2026-03-08 | 11.1 | - | Wrap up development, test features, and prepare for demo |
+| 1 | 2026-03-04 | 16.6 | 17.6 | Iteration 1 board finalized: tasks defined, estimates assigned, and initial progress tracked |
+| 2 | 2026-03-05 | 15.2 | 17.6 | Repo workflow validated, main/develop/feature branches and initial tracking are in place |
+| 3 | 2026-03-06 | 13.8 | 16.2 | Core gameplay development in progress (logic + UI behavior) |
+| 4 | 2026-03-07 | 12.5 | 11.2 | Friends list development in progress (add/list/delete + persistence checks) |
+| 5 | 2026-03-08 | 11.1 | 1.4 | Wrap up development, test features, and prepare for demo |
 | 6 | 2026-03-09 | 9.7 | - | Prepare Lab 7 assets: UML class diagram, use-case seq diagram drafts |
 | 7 | 2026-03-10 | 8.3 | - | Lab 7: demo working features, review requirements/priorities with customer |
 | 8 | 2026-03-11 | 6.9 | - | Update board and burndown after feedback; calculate current team velocity |

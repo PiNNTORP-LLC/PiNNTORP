@@ -27,7 +27,7 @@ export function addFriend(name) {
 export function removeFriend(name) {
     const user = state.users[state.currentUser];
     const next = user.friends.filter((f) => f !== name);
-    if (next.length === user.length) return;
+    if (next.length === user.friends.length) return;
 
     user.friends = next;
     saveState(state);
