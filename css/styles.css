@@ -23,3 +23,21 @@ ul {
 li {
     margin: 0.25rem 0;
 }
+
+.slot-row {
+    margin-top: 5%;
+    display: flex;
+    text-align: center;
+    justify-content: space-between;
+}
+
+.slot-nums {
+    color: #1b2049;
+    flex-basis: 31%;
+    background: #bcc5d5;
+    border-radius: 10px;
+    margin-bottom: 5%;
+    padding: 20px 12px;
+    box-sizing: border-box;
+    transition: 0.3s;
+}
