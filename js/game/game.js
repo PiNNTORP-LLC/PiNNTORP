@@ -1,8 +1,8 @@
-import { guessGameApi } from "./games/guessGame.js";
+import { diceRollApi } from "./games/diceRoll.js";
 import { slotGameApi } from "./games/slotGame.js";
 
 const gameApis = {
-    guess: guessGameApi,
+    dice: diceRollApi,
     slots: slotGameApi
 };
 

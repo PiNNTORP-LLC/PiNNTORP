@@ -2,8 +2,8 @@ import { state } from "../../core/state.js";
 import { saveState } from "../../core/storage.js";
 
 // for now using the assumption that the user makes a $5 bet
-function playGuessRound(guess) {
-    const roll = Math.floor(Math.random() * 3) + 1;
+function rollDice(guess) {
+    const roll = Math.floor(Math.random() * 6) + 1;
     const won = Number(guess) === roll;
     const user = state.users[state.currentUser];
 
@@ -15,6 +15,6 @@ function playGuessRound(guess) {
     return { guess: Number(guess), roll, won };
 }
 
-export const guessGameApi = {
-    play: playGuessRound
+export const diceRollApi = {
+    play: rollDice
 };

@@ -1,25 +1,25 @@
 import { getGameApi } from "./game.js";
 import { renderStats } from "../stats/statsView.js";
 
-const guessGameApi = getGameApi("guess");
+const diceGameApi = getGameApi("dice");
 const slotGameApi = getGameApi("slots");
 
 export function initGameView() {
     const controls = document.getElementById("game-controls");
     const result = document.getElementById("game-result");
 
-    [1, 2, 3].forEach((value) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.textContent = String(value);
-    button.addEventListener("click", () => {
-        const round = guessGameApi.play(value);
-        result.textContent = round.won
-        ? `Win: guessed ${round.guess}, rolled ${round.roll}`
-        : `Loss: guessed ${round.guess}, rolled ${round.roll}`;
-        renderStats();
-    });
-    controls.appendChild(button);
+    [1, 2, 3, 4, 5, 6].forEach((value) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = String(value);
+        button.addEventListener("click", () => {
+            const round = diceGameApi.play(value);
+            result.textContent = round.won
+            ? `Win: guessed ${round.guess}, rolled ${round.roll}`
+            : `Loss: guessed ${round.guess}, rolled ${round.roll}`;
+            renderStats();
+        });
+        controls.appendChild(button);
     });
 }
 

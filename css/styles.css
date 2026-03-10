@@ -1,14 +1,41 @@
+* {
+    box-sizing: border-box;
+}
+
 body {
-    max-width: 720px;
-    margin: 1rem auto;
-    padding: 0 1rem;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1rem;
     line-height: 1.4;
+    font-family: Arial, sans-serif;
+}
+
+h1,
+h2,
+h3,
+p {
+    margin-top: 0;
+}
+
+.layout {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.column {
+    flex: 1;
 }
 
 section {
     border: 1px solid #ccc;
     padding: 0.75rem;
     margin-bottom: 0.75rem;
+    background: #fff;
+}
+
+button {
+    padding: 0.35rem 0.7rem;
 }
 
 button,
@@ -24,20 +51,35 @@ li {
     margin: 0.25rem 0;
 }
 
+#game-controls {
+    margin-bottom: 0.75rem;
+}
+
+#friend-form {
+    margin-bottom: 0.75rem;
+}
+
 .slot-row {
-    margin-top: 5%;
+    margin: 0.75rem 0;
     display: flex;
+    gap: 0.75rem;
     text-align: center;
-    justify-content: space-between;
 }
 
 .slot-nums {
+    flex: 1;
     color: #1b2049;
-    flex-basis: 31%;
-    background: #bcc5d5;
-    border-radius: 10px;
-    margin-bottom: 5%;
-    padding: 20px 12px;
-    box-sizing: border-box;
-    transition: 0.3s;
+    background: #d9e1ef;
+    border-radius: 6px;
+    padding: 0.9rem 0.5rem;
+}
+
+@media (max-width: 560px) {
+    .layout {
+        flex-direction: column;
+    }
+
+    .slot-row {
+        flex-direction: column;
+    }
 }
