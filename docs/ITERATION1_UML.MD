@@ -2,86 +2,8 @@
 
 This document contains UML diagrams representing the current state of both the Java backend and the JavaScript frontend aswell as the connection between them.
 
-## 1. Backend (Java) Class Diagram
-
-```mermaid
-classDiagram
-    direction TB
-
-    class Main {
-        +main(String[] args)
-        +clean()
-    }
-
-    class ControlWindow {
-        +ControlWindow()
-    }
-
-    class ConsolePanel {
-        -JTextArea consoleText
-        +ConsolePanel()
-        +updateConsole()
-    }
-
-    class Console {
-        -ConcurrentLinkedQueue~String~ messageBuffer
-        -AtomicBoolean flushScheduled
-        -Runnable flushFunction
-        +setFlushFunction(Runnable function)
-        +markAsFlushed()
-        +log(String message)
-        +poll() String
-    }
-
-    class BrowserPanel {
-        +BrowserPanel()
-    }
-
-    class InspectorPanel {
-        +InspectorPanel()
-    }
-
-    class WebSocketServer {
-        -ServerSocket serverSocket
-        -boolean running
-        +WebSocketServer(int port)
-        +requestStop()
-        +run()
-    }
-
-    class WebSocket {
-        -Socket socket
-        -OutputStream output
-        -InputStream input
-        -boolean open
-        +WebSocket(Socket socket)
-        +isOpen() boolean
-        +receive() Message
-        +send(String message)
-        +close()
-    }
-
-    class Message {
-        -byte[] data
-        -int opcode
-        +Message(byte[] data, int opcode)
-        +getBytes() byte[]
-        +getString() String
-        +getOpcode() int
-    }
-
-    Main ..> ControlWindow
-    ControlWindow *-- ConsolePanel
-    ControlWindow *-- BrowserPanel
-    ControlWindow *-- InspectorPanel
-    ConsolePanel ..> Console
-    WebSocketServer ..> WebSocket
-    WebSocket ..> Message
-```
-
----
-
-## 2. Frontend (JavaScript) Module Diagram
+## 1. Frontend Module Relationships
+The frontend is built with vanilla JavaScript using a modular approach.
 
 ```mermaid
 graph TD
@@ -124,8 +46,8 @@ graph TD
 
 ---
 
-## 3. Data Structure (State)
-The frontend state is shaped as follows:
+## 2. Frontend Data Structure
+The state of the application is centralized.
 
 ```mermaid
 classDiagram
@@ -148,13 +70,30 @@ classDiagram
 
 ---
 
-## 4. Current Connection Status
-Currently, there is **no communication** between these two systems.
+## 3. Game Flow: Slots
+The following sequence diagram shows the flow of a single round of the Slots from user interaction to data persistence.
 
 ```mermaid
 sequenceDiagram
-    participant Browser as Client (JS App)
-    participant Java as Server (PiNNTORP Server)
+    participant User as User (Browser)
+    participant GV as gameView.js
+    participant Game as game.js/slotGame.js
+    participant State as state.js
+    participant Storage as storage.js
     
-    Browser->>Browser: Saves to LocalStorage
+    User->>GV: Clicks "Spin" Button
+    GV->>Game: play()
+    
+    Note over Game: Generates 3 random numbers (1-7)
+    Note over Game: Check matches (3-of-3 or 2-of-3)
+    
+    Game->>State: Update user statistics
+    Note right of State: Profit: +Win (multiplier) or -Loss (bet)
+    
+    Game->>Storage: saveState(state)
+    Storage->>Storage: Write to LocalStorage
+    
+    Game-->>GV: Returns [num1, num2, num3]
+    GV->>GV: Update slot display in DOM
+    GV->>GV: Trigger Stats View Re-render
 ```
