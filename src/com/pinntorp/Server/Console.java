@@ -1,6 +1,10 @@
 package com.pinntorp.Server;
 
 import javax.swing.*;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -17,9 +21,9 @@ public class Console
     /**
      * Set the flush function to the provided method.
      */
-    public static void setFlushFunction(Runnable function)
+    public static void setFlushFunction(Runnable flushFunc)
     {
-        flushFunction = function;
+        flushFunction = flushFunc;
     }
 
     /**
@@ -35,9 +39,9 @@ public class Console
      * Log a string message to the console.
      * @param message   the message to write
      */
-    public static void log(String message)
+    public static void log(String source, String message)
     {
-        messageBuffer.add(message);
+        messageBuffer.add(LocalTime.now().format(DateTimeFormatter.ofPattern("hh:mm:ss a")) + " [" + source + "] " + message);
 
         // Flush if flush not scheduled and flush function is set
         if(flushFunction != null && flushScheduled.compareAndSet(false, true))
@@ -52,6 +56,10 @@ public class Console
      */
     public static String poll()
     {
+        // Write the message into the current log file. This is to keep file writing thread-safe
+
+
+        // Return the message
         return messageBuffer.poll();
     }
 }
