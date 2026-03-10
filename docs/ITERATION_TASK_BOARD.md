@@ -17,8 +17,8 @@ Team velocity baseline: `5 devs x 14 working days x 0.5 = 35 developer days per 
 |---|---|---:|---|---|
 | I1-01 | Initial repository setup + branch model (`main/develop/feature/*`) | 2 | Hayden Dunn | Done |
 | I1-02 | App skeleton and module wiring | 3 | Hayden Dunn | Done |
-| I1-03 | Game mechanics implementation | 14 | Nikola Grujin | To Do |
-| I1-04 | Friends list implementation | 4 | Mele Felix + Adrian Ahmadi | In Progress |
+| I1-03 | Game mechanics implementation | 14 | Nikola Grujin + Adrian Ahmadi | Done |
+| I1-04 | Friends list implementation | 4 | Mele Felix + Adrian Ahmadi | Done |
 | I1-05 | Statistics display implementation | 4 | Eric Beaulne | To Do |
 | I1-06 | Iteration 1 integration + QA signoff | 2 | Hayden Dunn | To Do |
 

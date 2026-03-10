@@ -9,8 +9,9 @@ import matplotlib.pyplot as plt
 # Inputs
 # -----------------------------
 ITERATION_NAME = "Iteration 1"
-START_DATE = date(2026, 3, 3) # Day 0 of the iteration (the lab day)
+START_DATE = date(2026, 2, 24) # Day 0 of the iteration
 ITERATION_TOTAL_DAYS = 14 # Days 0..13
+DEVELOPMENT_START_DAY = 7 # Development begins after the March 3 Lab 6 meeting
 OUTPUT_FILE = Path(__file__).with_name("ITERATION1_BURNDOWN.md")
 PLOT_FILE = Path(__file__).with_name("ITERATION1_BURNDOWN.png")
 
@@ -30,42 +31,74 @@ CATEGORY_PROGRESS_BY_DAY: Dict[int, List[CategoryProgress]] = {
     ],
     1: [
         CategoryProgress("Game Mechanics", 14, 0),
-        CategoryProgress("Friends List", 4, 10),
+        CategoryProgress("Friends List", 4, 0),
     ],
     2: [
         CategoryProgress("Game Mechanics", 14, 0),
-        CategoryProgress("Friends List", 4, 10),
+        CategoryProgress("Friends List", 4, 0),
     ],
     3: [
-        CategoryProgress("Game Mechanics", 14, 10),
-        CategoryProgress("Friends List", 4, 10),
+        CategoryProgress("Game Mechanics", 14, 0),
+        CategoryProgress("Friends List", 4, 0),
     ],
     4: [
-        CategoryProgress("Game Mechanics", 14, 20),
-        CategoryProgress("Friends List", 4, 100),
+        CategoryProgress("Game Mechanics", 14, 0),
+        CategoryProgress("Friends List", 4, 0),
     ],
     5: [
-        CategoryProgress("Game Mechanics", 14, 90),
+        CategoryProgress("Game Mechanics", 14, 0),
+        CategoryProgress("Friends List", 4, 0),
+    ],
+    6: [
+        CategoryProgress("Game Mechanics", 14, 0),
+        CategoryProgress("Friends List", 4, 0),
+    ],
+    7: [
+        CategoryProgress("Game Mechanics", 14, 0),
+        CategoryProgress("Friends List", 4, 0),
+    ],
+    8: [
+        CategoryProgress("Game Mechanics", 14, 0),
+        CategoryProgress("Friends List", 4, 10),
+    ],
+    9: [
+        CategoryProgress("Game Mechanics", 14, 20),
+        CategoryProgress("Friends List", 4, 25),
+    ],
+    10: [
+        CategoryProgress("Game Mechanics", 14, 45),
+        CategoryProgress("Friends List", 4, 50),
+    ],
+    11: [
+        CategoryProgress("Game Mechanics", 14, 30),
+        CategoryProgress("Friends List", 4, 100),
+    ],
+    12: [
+        CategoryProgress("Game Mechanics", 14, 50),
+        CategoryProgress("Friends List", 4, 100),
+    ],
+    13: [
+        CategoryProgress("Game Mechanics", 14, 100),
         CategoryProgress("Friends List", 4, 100),
     ]
 }
 
 # Note labels for the days
 NOTES_BY_DAY: Dict[int, str] = {
-    0: "Lab 6: customer meeting, running skeleton shown, board and burndown presented",
-    1: "Iteration 1 board finalized: tasks defined, estimates assigned, and initial progress tracked",
-    2: "Repo workflow validated, main/develop/feature branches and initial tracking are in place",
-    3: "Core gameplay development in progress (logic + UI behavior)",
-    4: "Friends list development in progress (add/list/delete + persistence checks)",
-    5: "Wrap up development, test features, and prepare for demo",
-    6: "Prepare Lab 7 assets: UML class diagram, use-case seq diagram drafts",
-    7: "Lab 7: demo working features, review requirements/priorities with customer",
-    8: "Update board and burndown after feedback; calculate current team velocity",
-    9: "Repository audit: each team member has at least one contribution committed",
-    10: "Iteration 1 retrospective draft: wins, improvements, and key challenges",
-    11: "Apply retrospective actions and stabilize develop branch for closeout",
-    12: "Finalize demo docs and evidence for iteration completion",
-    13: "Iteration 1 close and handoff planning for Iteration 2",
+    0: "Iteration 1 kickoff: define scope, break down tasks, and begin planning",
+    1: "Task board finalized: iteration 1 tasks are identified, estimated, and assigned",
+    2: "Requirements reviewed and priorities clarified for iteration 1 scope",
+    3: "Repository setup completed",
+    4: "Burndown tracking prepared and planning materials refined for the customer meeting",
+    5: "Final planning pass: board, estimates, assignments, and repo setup ready for review",
+    6: "Final pre-meeting polish: running skeleton, board, and burndown ready for customer review",
+    7: "Lab 6 customer meeting: present running skeleton, task board, repository setup, and in-progress burndown",
+    8: "Post-meeting development begins: start core gameplay implementation",
+    9: "Friends list development in progress (add/list/delete + persistence checks)",
+    10: "Statistics display wiring and persistence checks in progress",
+    11: "Feature integration pass on develop with the repository audit and retrospective draft in progress",
+    12: "Prepare Lab 7 assets: UML class diagram, sequence diagram, updated requirement priorities, burndown, and velocity",
+    13: "Iteration 1 closeout complete; handoff ready for Iteration 2 starting March 10",
 }
 
 # -----------------------------
@@ -85,8 +118,16 @@ def calculate_remaining_days_from_categories(categories: Iterable[CategoryProgre
 def ideal_remaining(total_effort: float, iteration_days: int, day: int) -> float:
     if iteration_days <= 1:
         return 0.0
-    daily_burn = total_effort / (iteration_days - 1)
-    remaining = total_effort - (daily_burn * day)
+
+    if day < DEVELOPMENT_START_DAY:
+        return round(total_effort, 1)
+
+    burn_days = iteration_days - DEVELOPMENT_START_DAY - 1
+    if burn_days <= 0:
+        return 0.0
+
+    daily_burn = total_effort / burn_days
+    remaining = total_effort - (daily_burn * (day - DEVELOPMENT_START_DAY))
     return round(max(0.0, remaining), 1)
 
 def actual_remaining_for_day(day: int) -> float | None:
@@ -114,7 +155,7 @@ def generate_markdown() -> str:
     lines.append("")
     lines.append(f"Iteration 1 length: **{ITERATION_TOTAL_DAYS}d**")
     lines.append("| Effort unit: **developer days**")
-    lines.append(f"| Planned effort from day 0: **{total_effort:.0f}d**")
+    lines.append(f"| Total planned implementation effort: **{total_effort:.0f}d**")
     lines.append("")
     lines.append("| Day | Date | Ideal Remaining | Actual Remaining | Progress / Context |")
     lines.append("|---:|---|---:|---:|---|")
