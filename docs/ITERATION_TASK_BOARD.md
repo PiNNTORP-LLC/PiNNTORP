@@ -19,10 +19,11 @@ Team velocity baseline: `5 devs x 14 working days x 0.5 = 35 developer days per 
 | I1-02 | App skeleton and module wiring | 3 | Hayden Dunn | Done |
 | I1-03 | Game mechanics implementation | 14 | Nikola Grujin + Adrian Ahmadi | Done |
 | I1-04 | Friends list implementation | 4 | Mele Felix + Adrian Ahmadi | Done |
-| I1-05 | Statistics display implementation | 4 | Eric Beaulne | To Do |
-| I1-06 | Iteration 1 integration + QA signoff | 2 | Hayden Dunn | To Do |
+| I1-05 | Statistics display implementation | 4 | Eric Beaulne | Done |
+| I1-06 | Win/loss ratio implementation | 4 | Eric Beaulne | Done |
+| I1-07 | Iteration 1 integration + QA signoff | 2 | Hayden Dunn | Done |
 
-Total Iteration 1 planned effort: **29 dev-days**
+Total Iteration 1 planned effort: **33 dev-days**
 
 ## Not Worked On in Iteration 1
 | ID | Requirement | Effort (dev-days) | Assigned To | Planned Iteration | Status |
@@ -33,6 +34,7 @@ Total Iteration 1 planned effort: **29 dev-days**
 ## User Story Coverage
 - Core gameplay mechanics: I1-03
 - Add/manage friends: I1-04
-- View stats and win/loss ratio: I1-05
+- View stats: I1-05
+- View win/loss ratio: I1-06
 - Recommendation feature: deferred to Iteration 2 (I2-01)
 - Account deletion feature: deferred to Iteration 3 (I3-01)

@@ -1,6 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date, timedelta
+from math import exp
 from pathlib import Path
 from typing import Dict, Iterable, List
 import matplotlib.pyplot as plt
@@ -11,7 +12,8 @@ import matplotlib.pyplot as plt
 ITERATION_NAME = "Iteration 1"
 START_DATE = date(2026, 2, 24) # Day 0 of the iteration
 ITERATION_TOTAL_DAYS = 14 # Days 0..13
-DEVELOPMENT_START_DAY = 7 # Development begins after the March 3 Lab 6 meeting
+DEVELOPMENT_START_DAY = 8 # Development begins after the March 3 Lab 6 meeting
+PRE_LAB6_TARGET_REMAINING = 22.0 # Skeleton app work reduces some effort before full development begins
 OUTPUT_FILE = Path(__file__).with_name("ITERATION1_BURNDOWN.md")
 PLOT_FILE = Path(__file__).with_name("ITERATION1_BURNDOWN.png")
 
@@ -28,58 +30,86 @@ CATEGORY_PROGRESS_BY_DAY: Dict[int, List[CategoryProgress]] = {
     0: [
         CategoryProgress("Game Mechanics", 14, 0),
         CategoryProgress("Friends List", 4, 0),
+        CategoryProgress("Statistics Display", 4, 0),
+        CategoryProgress("Win/Loss Ratio", 4, 0),
     ],
     1: [
         CategoryProgress("Game Mechanics", 14, 0),
         CategoryProgress("Friends List", 4, 0),
+        CategoryProgress("Statistics Display", 4, 0),
+        CategoryProgress("Win/Loss Ratio", 4, 0),
     ],
     2: [
         CategoryProgress("Game Mechanics", 14, 0),
         CategoryProgress("Friends List", 4, 0),
+        CategoryProgress("Statistics Display", 4, 0),
+        CategoryProgress("Win/Loss Ratio", 4, 0),
     ],
     3: [
         CategoryProgress("Game Mechanics", 14, 0),
         CategoryProgress("Friends List", 4, 0),
+        CategoryProgress("Statistics Display", 4, 0),
+        CategoryProgress("Win/Loss Ratio", 4, 0),
     ],
     4: [
         CategoryProgress("Game Mechanics", 14, 0),
         CategoryProgress("Friends List", 4, 0),
+        CategoryProgress("Statistics Display", 4, 0),
+        CategoryProgress("Win/Loss Ratio", 4, 0),
     ],
     5: [
         CategoryProgress("Game Mechanics", 14, 0),
         CategoryProgress("Friends List", 4, 0),
+        CategoryProgress("Statistics Display", 4, 0),
+        CategoryProgress("Win/Loss Ratio", 4, 0),
     ],
     6: [
         CategoryProgress("Game Mechanics", 14, 0),
         CategoryProgress("Friends List", 4, 0),
+        CategoryProgress("Statistics Display", 4, 0),
+        CategoryProgress("Win/Loss Ratio", 4, 0),
     ],
     7: [
-        CategoryProgress("Game Mechanics", 14, 0),
-        CategoryProgress("Friends List", 4, 0),
+        CategoryProgress("Game Mechanics", 14, 15),
+        CategoryProgress("Friends List", 4, 15),
+        CategoryProgress("Statistics Display", 4, 15),
+        CategoryProgress("Win/Loss Ratio", 4, 15),
     ],
     8: [
-        CategoryProgress("Game Mechanics", 14, 0),
-        CategoryProgress("Friends List", 4, 10),
+        CategoryProgress("Game Mechanics", 14, 15),
+        CategoryProgress("Friends List", 4, 15),
+        CategoryProgress("Statistics Display", 4, 15),
+        CategoryProgress("Win/Loss Ratio", 4, 15),
     ],
     9: [
         CategoryProgress("Game Mechanics", 14, 20),
         CategoryProgress("Friends List", 4, 25),
+        CategoryProgress("Statistics Display", 4, 25),
+        CategoryProgress("Win/Loss Ratio", 4, 15),
     ],
     10: [
         CategoryProgress("Game Mechanics", 14, 45),
         CategoryProgress("Friends List", 4, 50),
+        CategoryProgress("Statistics Display", 4, 50),
+        CategoryProgress("Win/Loss Ratio", 4, 25),
     ],
     11: [
-        CategoryProgress("Game Mechanics", 14, 30),
-        CategoryProgress("Friends List", 4, 100),
+        CategoryProgress("Game Mechanics", 14, 70),
+        CategoryProgress("Friends List", 4, 75),
+        CategoryProgress("Statistics Display", 4, 75),
+        CategoryProgress("Win/Loss Ratio", 4, 50),
     ],
     12: [
-        CategoryProgress("Game Mechanics", 14, 50),
+        CategoryProgress("Game Mechanics", 14, 90),
         CategoryProgress("Friends List", 4, 100),
+        CategoryProgress("Statistics Display", 4, 100),
+        CategoryProgress("Win/Loss Ratio", 4, 75),
     ],
     13: [
         CategoryProgress("Game Mechanics", 14, 100),
         CategoryProgress("Friends List", 4, 100),
+        CategoryProgress("Statistics Display", 4, 100),
+        CategoryProgress("Win/Loss Ratio", 4, 100),
     ]
 }
 
@@ -95,7 +125,7 @@ NOTES_BY_DAY: Dict[int, str] = {
     7: "Lab 6 customer meeting: present running skeleton, task board, repository setup, and in-progress burndown",
     8: "Post-meeting development begins: start core gameplay implementation",
     9: "Friends list development in progress (add/list/delete + persistence checks)",
-    10: "Statistics display wiring and persistence checks in progress",
+    10: "Statistics display and win/loss ratio wiring in progress",
     11: "Feature integration pass on develop with the repository audit and retrospective draft in progress",
     12: "Prepare Lab 7 assets: UML class diagram, sequence diagram, updated requirement priorities, burndown, and velocity",
     13: "Iteration 1 closeout complete; handoff ready for Iteration 2 starting March 10",
@@ -120,14 +150,19 @@ def ideal_remaining(total_effort: float, iteration_days: int, day: int) -> float
         return 0.0
 
     if day < DEVELOPMENT_START_DAY:
-        return round(total_effort, 1)
+        if DEVELOPMENT_START_DAY <= 1:
+            return round(total_effort, 1)
+        progress = day / (DEVELOPMENT_START_DAY - 1)
+        easing = (exp(progress) - 1) / (exp(1) - 1)
+        remaining = total_effort - ((total_effort - PRE_LAB6_TARGET_REMAINING) * easing)
+        return round(max(PRE_LAB6_TARGET_REMAINING, remaining), 1)
 
     burn_days = iteration_days - DEVELOPMENT_START_DAY - 1
     if burn_days <= 0:
         return 0.0
 
-    daily_burn = total_effort / burn_days
-    remaining = total_effort - (daily_burn * (day - DEVELOPMENT_START_DAY))
+    daily_burn = PRE_LAB6_TARGET_REMAINING / burn_days
+    remaining = PRE_LAB6_TARGET_REMAINING - (daily_burn * (day - DEVELOPMENT_START_DAY))
     return round(max(0.0, remaining), 1)
 
 def actual_remaining_for_day(day: int) -> float | None:
@@ -155,7 +190,7 @@ def generate_markdown() -> str:
     lines.append("")
     lines.append(f"Iteration 1 length: **{ITERATION_TOTAL_DAYS}d**")
     lines.append("| Effort unit: **developer days**")
-    lines.append(f"| Total planned implementation effort: **{total_effort:.0f}d**")
+    lines.append(f"| Total planned implementation effort (for the core mechanics): **{total_effort:.0f}d**")
     lines.append("")
     lines.append("| Day | Date | Ideal Remaining | Actual Remaining | Progress / Context |")
     lines.append("|---:|---|---:|---:|---|")
@@ -173,7 +208,7 @@ def generate_markdown() -> str:
 
     lines.append("")
     generate_plot(date_labels, ideal_values, actual_values)
-    lines.append("The formula used to estimate the actual remaining days is `remaining_days = total_days * (1 - percent_complete / 100)`")
+    lines.append("The formula used to estimate the actual remaining days is `remaining_days = total_days * (1 - percent_complete / 100)`. And the chart does not reflect non-core program elements such as repo setups, and documentation.")
     lines.append("## Burndown Plot")
     lines.append("")
     lines.append("![Iteration 1 Burndown](ITERATION1_BURNDOWN.png)")
