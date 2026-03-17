@@ -1,46 +1,78 @@
 # PiNNTORP
 
-PiNNTORP is a vanilla JavaScript web app (HTML/CSS/JS).
+> A vanilla JavaScript web application built for CSCI 2040U.
 
-## Team and Roles
-- Eric Beaulne - Project Manager
-- Mele Felix - Technical Manager
-- Adrian Ahmadi - Front-End Lead
-- Nikola Grujin - Back-End Lead
-- Hayden Dunn - Software Quality Lead
+---
 
-Current contribution note: Hayden completed the initial repository/project setup and baseline wiring for Iteration 1.
+## Tech Stack
+
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
+
+---
+
+## Team
+
+| Name | Role |
+|------|------|
+| Eric Beaulne | Project Manager |
+| Mele Felix | Technical Manager |
+| Adrian Ahmadi | Front-End Lead |
+| Nikola Grujin | Back-End Lead |
+| Hayden Dunn | Software Quality Lead |
+
+
+---
 
 ## Iteration Plan
-- Iteration 1: core game mechanics, friends list, statistics display
-- Iteration 2: recommendation algorithm
-- Iteration 3: account deletion
 
-**Team size:** 5 members  
-**Iterations**: 3 iterations, each 2 weeks  
-**Team velocity**: 0.5
+| Iteration | Duration | Goals |
+|-----------|----------|-------|
+| 1 | 2 weeks | Core game mechanics, friends list, statistics display |
+| 2 | 2 weeks | Recommendation algorithm |
+| 3 | 2 weeks | Account deletion |
+
+**Team size:** 5 members | **Velocity:** 0.5
+
+---
 
 ## Git Workflow
-- `main`: stable demo only
-- `develop`: integration branch
-- `feature/*`: individual contributor branches
 
-Flow: `feature/*` -> `develop` -> team test -> `main`
+```
+feature/*  →  develop  →  (team test)  →  main
+```
 
-## Run
-Double-click `start-server.bat`, or run:
+| Branch | Purpose |
+|--------|---------|
+| `main` | Stable demo only |
+| `develop` | Integration branch |
+| `feature/*` | Individual contributor branches |
 
+---
+
+## Getting Started
+
+**Option 1 - Double-click:**
+```
+start-server.bat
+```
+
+**Option 2 - Terminal:**
 ```powershell
 python -m http.server 5500
 ```
 
-Then open `http://localhost:5500`.
+Then open [http://localhost:5500](http://localhost:5500) in your browser.
 
-## Test
-Run the unit tests with:
+---
+
+## Running Tests
 
 ```powershell
 npm test
 ```
 
-The current unit test suite covers the `friends.js` and `stats.js` modules.
+Current coverage: `friends.js` and `stats.js` modules.
