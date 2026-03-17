@@ -1,4 +1,5 @@
 import { addFriend, getFriends, removeFriend } from "./friends.js";
+import { renderRec } from "../recommendation/recView.js";
 
 function renderFriends(list) {
     list.innerHTML = "";
@@ -13,6 +14,7 @@ function renderFriends(list) {
     del.addEventListener("click", () => {
         removeFriend(friend);
         renderFriends(list);
+        renderRec();
     });
 
     item.appendChild(name);
@@ -34,5 +36,6 @@ export function initFriendsView() {
 
     input.value = "";
     renderFriends(list);
+    renderRec();
     });
     }
