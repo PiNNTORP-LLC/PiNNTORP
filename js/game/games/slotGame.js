@@ -17,7 +17,9 @@ async function playSlotRound() {
         // Update user state based on backend profit calculations
         if (data.stats) {
             const user = state.users[state.currentUser];
-            Object.assign(user, data.stats);
+            if (user) {
+                Object.assign(user, data.stats);
+            }
         }
 
         saveState(state);

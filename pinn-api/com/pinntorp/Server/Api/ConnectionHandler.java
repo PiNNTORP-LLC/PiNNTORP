@@ -272,7 +272,83 @@ public class ConnectionHandler extends Thread {
                 return;
             }
 
-            // Route 6: Static File Server
+            // Route 6: Dice API (Requires JWT)
+            if (path.startsWith("/api/dice") && method.equals("POST")) {
+                String authHeader = headers.get("Authorization");
+                if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                    sendJsonResponse(out, 403, "Missing JWT Authorization header.", "error");
+                    socket.close();
+                    return;
+                }
+
+                String token = authHeader.substring(7);
+                String verifiedUsername = AuthHelper.validateJWTAndGetUsername(token);
+
+                if (verifiedUsername == null) {
+                    sendJsonResponse(out, 403, "Invalid JWT Token.", "error");
+                    socket.close();
+                    return;
+                }
+
+                int contentLen = Integer.parseInt(headers.getOrDefault("Content-Length", "0"));
+                String body = getRequestBody(in, contentLen);
+                int guess = 0;
+                try {
+                    String guessStr = extractJsonString(body, "guess");
+                    if (guessStr == null) {
+                        // Try integer if not string quote
+                        String search = "\"guess\":";
+                        int start = body.indexOf(search);
+                        if (start != -1) {
+                            start += search.length();
+                            int end = body.indexOf(",", start);
+                            if (end == -1)
+                                end = body.indexOf("}", start);
+                            guess = Integer.parseInt(body.substring(start, end).trim());
+                        }
+                    } else {
+                        guess = Integer.parseInt(guessStr);
+                    }
+                } catch (Exception e) {
+                    guess = 1; // fallback
+                }
+
+                int roll = (int) (Math.random() * 6) + 1;
+                boolean won = (guess == roll);
+                int profit = won ? 10 : -5;
+
+                Database.UserData user = Database.users.get(verifiedUsername);
+                if (user != null) {
+                    user.gamesPlayed++;
+                    if (won)
+                        user.wins++;
+                    else
+                        user.losses++;
+                    user.profit += profit;
+                    Database.save();
+                }
+
+                String json = String.format(
+                        "{\"roll\": %d, \"won\": %b, \"guess\": %d, \"profit\": %d, \"stats\": {\"gamesPlayed\":%d, \"wins\":%d, \"losses\":%d, \"profit\":%d}}",
+                        roll, won, guess, profit,
+                        user != null ? user.gamesPlayed : 0,
+                        user != null ? user.wins : 0,
+                        user != null ? user.losses : 0,
+                        user != null ? user.profit : 0);
+
+                String response = "HTTP/1.1 200 OK\r\n" +
+                        "Content-Type: application/json\r\n" +
+                        "Content-Length: " + json.length() + "\r\n" +
+                        "Access-Control-Allow-Origin: *\r\n\r\n" +
+                        json;
+
+                out.write(response.getBytes("UTF-8"));
+                out.flush();
+                socket.close();
+                return;
+            }
+
+            // Route 7: Static File Server
             if (method.equals("GET")) {
                 if (path.equals("/")) {
                     path = "/index.html";

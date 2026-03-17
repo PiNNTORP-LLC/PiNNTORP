@@ -2,17 +2,35 @@ import { state } from "../../core/state.js";
 import { saveState } from "../../core/storage.js";
 
 // for now using the assumption that the user makes a $5 bet
-function rollDice(guess) {
-    const roll = Math.floor(Math.random() * 6) + 1;
-    const won = Number(guess) === roll;
-    const user = state.users[state.currentUser];
+async function rollDice(guess) {
+    try {
+        const token = localStorage.getItem("jwt");
+        const headers = { "Content-Type": "application/json" };
+        if (token) headers["Authorization"] = `Bearer ${token}`;
 
-    user.gamesPlayed += 1;
-    if (won) user.wins += 1, user.profit += 10;
-    else user.losses += 1, user.profit -= 5;
+        const response = await fetch("http://localhost:8080/api/dice", {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify({ guess: Number(guess) })
+        });
 
-    saveState(state);
-    return { guess: Number(guess), roll, won };
+        const data = await response.json();
+
+        // Update user state based on backend response
+        if (data.stats) {
+            const user = state.users[state.currentUser];
+            if (user) {
+                Object.assign(user, data.stats);
+            }
+        }
+
+        saveState(state);
+        return { guess: data.guess, roll: data.roll, won: data.won };
+
+    } catch (error) {
+        console.error("Dice roll API failed:", error);
+        return { guess: Number(guess), roll: 1, won: false };
+    }
 }
 
 export const diceRollApi = {

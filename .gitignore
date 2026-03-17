@@ -147,3 +147,7 @@ __pycache__/
 # Java compiled files
 *.class
 pinn-api/build/
+build/
+
+# Database
+users.json

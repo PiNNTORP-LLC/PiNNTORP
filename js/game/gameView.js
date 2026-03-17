@@ -12,8 +12,8 @@ export function initGameView() {
         const button = document.createElement("button");
         button.type = "button";
         button.textContent = String(value);
-        button.addEventListener("click", () => {
-            const round = diceGameApi.play(value);
+        button.addEventListener("click", async () => {
+            const round = await diceGameApi.play(value);
             result.textContent = round.won
                 ? `Win: guessed ${round.guess}, rolled ${round.roll}`
                 : `Loss: guessed ${round.guess}, rolled ${round.roll}`;
@@ -25,16 +25,98 @@ export function initGameView() {
 
 export function initSlotView() {
     const button = document.getElementById("slot-roll");
-    const firstNum = document.getElementById("first-num");
-    const secNum = document.getElementById("second-num");
-    const thirdNum = document.getElementById("third-num");
+    const reels = [
+        document.getElementById("reel-1"),
+        document.getElementById("reel-2"),
+        document.getElementById("reel-3")
+    ];
+
+    const symbolHeight = 140; // Matches CSS
+
+    // Initial state setup
+    reels.forEach(reel => {
+        reel.innerHTML = `<div class="slot-symbol">?</div>`;
+    });
 
     button.addEventListener("click", async () => {
+        if (button.disabled) return;
+        button.disabled = true;
+
+        // 1. Setup the fake scrolling reels
+        reels.forEach((reel) => {
+            const dir = Math.random() > 0.5 ? 1 : -1;
+            reel.dataset.dir = dir;
+
+            let html = '';
+            for (let i = 0; i < 60; i++) {
+                const r = Math.floor(Math.random() * 7) + 1;
+                html += `<div class="slot-symbol">${r}</div>`;
+            }
+            reel.innerHTML = html;
+
+            // Loop scroll using GSAP while waiting
+            if (dir === 1) {
+                gsap.set(reel, { y: 0 });
+                gsap.to(reel, {
+                    y: -(50 * symbolHeight),
+                    duration: 3,
+                    ease: "power2.inOut",
+                });
+            } else {
+                gsap.set(reel, { y: -(50 * symbolHeight) });
+                gsap.to(reel, {
+                    y: 0,
+                    duration: 3,
+                    ease: "power2.inOut",
+                });
+            }
+        });
+
+        // Await the actual game numbers from the server
         const slotNums = await slotGameApi.play();
-        firstNum.textContent = String(slotNums[0]);
-        secNum.textContent = String(slotNums[1]);
-        thirdNum.textContent = String(slotNums[2]);
+
+        // 3. Lock them into their final destination staggering the finish
+        reels.forEach((reel, index) => {
+            gsap.killTweensOf(reel);
+            const dir = parseInt(reel.dataset.dir || 1);
+
+            let html = '';
+            if (dir === 1) {
+                for (let i = 0; i < 15; i++) {
+                    const r = Math.floor(Math.random() * 7) + 1;
+                    html += `<div class="slot-symbol">${r}</div>`;
+                }
+                // Add the real returned number as the final destination
+                html += `<div class="slot-symbol winner">${slotNums[index]}</div>`;
+                reel.innerHTML = html;
+
+                gsap.set(reel, { y: 0 });
+                gsap.to(reel, {
+                    y: -(15 * symbolHeight),
+                    duration: 1.5 + (index * 0.5), // Stagger stop times like real slots
+                    ease: "back.out(1.2)"
+                });
+            } else {
+                html += `<div class="slot-symbol winner">${slotNums[index]}</div>`;
+                for (let i = 0; i < 15; i++) {
+                    const r = Math.floor(Math.random() * 7) + 1;
+                    html += `<div class="slot-symbol">${r}</div>`;
+                }
+                reel.innerHTML = html;
+
+                gsap.set(reel, { y: -(15 * symbolHeight) });
+                gsap.to(reel, {
+                    y: 0,
+                    duration: 1.5 + (index * 0.5),
+                    ease: "back.out(1.2)"
+                });
+            }
+        });
+
+        // Promise to wait for the longest reel to complete
+        await new Promise(r => setTimeout(r, 2600));
 
         renderStats();
-    })
+        button.disabled = false;
+    });
 }
