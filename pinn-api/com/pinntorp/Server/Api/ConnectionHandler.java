@@ -99,6 +99,37 @@ public class ConnectionHandler extends Thread {
                 return;
             }
 
+            // Route 3: Gamble API
+            if (path.startsWith("/api/gamble") && method.equals("POST")) {
+                // Determine slot game result
+                int firstNum = (int) (Math.random() * 7) + 1;
+                int secNum = (int) (Math.random() * 7) + 1;
+                int thirdNum = (int) (Math.random() * 7) + 1;
+
+                int profit = -5; // base loss
+                if (firstNum == secNum && secNum == thirdNum) {
+                    profit = firstNum * 5;
+                } else if (firstNum == secNum || firstNum == thirdNum || secNum == thirdNum) {
+                    profit = 10;
+                }
+
+                // Temporary inline JSON generation for immediate function return
+                String json = String.format(
+                        "{\"nums\": [%d, %d, %d], \"profit\": %d}",
+                        firstNum, secNum, thirdNum, profit);
+
+                String response = "HTTP/1.1 200 OK\r\n" +
+                        "Content-Type: application/json\r\n" +
+                        "Content-Length: " + json.length() + "\r\n" +
+                        "Access-Control-Allow-Origin: *\r\n\r\n" +
+                        json;
+
+                out.write(response.getBytes("UTF-8"));
+                out.flush();
+                socket.close();
+                return;
+            }
+
             // Route 3: Static File Server
             if (method.equals("GET")) {
                 if (path.equals("/")) {

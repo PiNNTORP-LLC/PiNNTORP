@@ -15,8 +15,8 @@ export function initGameView() {
         button.addEventListener("click", () => {
             const round = diceGameApi.play(value);
             result.textContent = round.won
-            ? `Win: guessed ${round.guess}, rolled ${round.roll}`
-            : `Loss: guessed ${round.guess}, rolled ${round.roll}`;
+                ? `Win: guessed ${round.guess}, rolled ${round.roll}`
+                : `Loss: guessed ${round.guess}, rolled ${round.roll}`;
             renderStats();
         });
         controls.appendChild(button);
@@ -29,8 +29,8 @@ export function initSlotView() {
     const secNum = document.getElementById("second-num");
     const thirdNum = document.getElementById("third-num");
 
-    button.addEventListener("click", () => {
-        const slotNums = slotGameApi.play();
+    button.addEventListener("click", async () => {
+        const slotNums = await slotGameApi.play();
         firstNum.textContent = String(slotNums[0]);
         secNum.textContent = String(slotNums[1]);
         thirdNum.textContent = String(slotNums[2]);

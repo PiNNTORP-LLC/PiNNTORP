@@ -1,50 +1,32 @@
 import { state } from "../../core/state.js";
 import { saveState } from "../../core/storage.js";
 
-// helper functions for checking values of slot numbers
-function twoOutOfThreeMatch(num1, num2, num3) {
-    if (num1 == num2 || num1 == num3 || num2 == num3) {
-        return true;
-    } else {
-        return false;
-    }
-}
+async function playSlotRound() {
+    try {
+        const response = await fetch("http://localhost:8080/api/gamble", {
+            method: "POST"
+        });
 
-function threeOutOfThreeMatch(num1, num2, num3) {
-    if (num1 == num2 && num1 == num3 && num3 == num2) {
-        return true;
-    } else {
-        return false;
-    }
-}
+        const data = await response.json();
 
-// for now using the assumption that the user makes a $5 bet
-function playSlotRound() {
-    const user = state.users[state.currentUser];
-
-    // randomise the 3 slot numbers
-    const firstNum = Math.floor(Math.random() * 7) + 1;
-    const secNum = Math.floor(Math.random() * 7) + 1;
-    const thirdNum = Math.floor(Math.random() * 7) + 1;
-
-    // if all three match then multiply the number on the machine by the original bet
-    // (for now assuming the user put a $5 bet)
-    if (threeOutOfThreeMatch(firstNum, secNum, thirdNum)) {
+        // Update user state based on backend profit calculations
+        const user = state.users[state.currentUser];
         user.gamesPlayed += 1;
-        user.wins += 1;
-        user.profit += firstNum * 5;
-    } else if (twoOutOfThreeMatch(firstNum, secNum, thirdNum)) {
-        user.gamesPlayed += 1;
-        user.wins += 1;
-        user.profit += 10; // double if only 2 match
-    } else {
-        user.gamesPlayed += 1;
-        user.losses += 1;
-        user.profit -= 5;
-    }
 
-    saveState(state);
-    return [firstNum, secNum, thirdNum];
+        if (data.profit > 0) {
+            user.wins += 1;
+        } else {
+            user.losses += 1;
+        }
+        user.profit += data.profit;
+
+        saveState(state);
+        return data.nums;
+
+    } catch (error) {
+        console.error("Backend gamble request failed:", error);
+        return [0, 0, 0];
+    }
 }
 
 export const slotGameApi = {
