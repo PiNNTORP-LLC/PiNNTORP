@@ -19,7 +19,13 @@ if (localStorage.getItem("jwt")) {
 
     // Async IIFE to fetch state before initializing stats/game
     (async () => {
-        await fetchState();
+        const success = await fetchState();
+        if (!success) {
+            console.warn("Session invalid or user not found. Logging out.");
+            localStorage.removeItem("jwt");
+            window.location.reload();
+            return;
+        }
 
         initTabs();
         initSlotView();
