@@ -3,8 +3,13 @@ import { saveState } from "../../core/storage.js";
 
 async function playSlotRound() {
     try {
+        const token = localStorage.getItem("jwt");
+        const headers = { "Content-Type": "application/json" };
+        if (token) headers["Authorization"] = `Bearer ${token}`;
+
         const response = await fetch("http://localhost:8080/api/gamble", {
-            method: "POST"
+            method: "POST",
+            headers: headers
         });
 
         const data = await response.json();

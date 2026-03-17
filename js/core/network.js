@@ -1,5 +1,8 @@
 export function initNetwork() {
-    const ws = new WebSocket("ws://localhost:8080");
+    const token = localStorage.getItem("jwt");
+    // Connect WebSocket securely by passing the JWT as a query parameter or similar approach
+    const url = token ? `ws://localhost:8080?token=${token}` : "ws://localhost:8080";
+    const ws = new WebSocket(url);
 
     ws.onopen = () => {
         console.log("Connected to PiNNTORP WebSocket Server!");

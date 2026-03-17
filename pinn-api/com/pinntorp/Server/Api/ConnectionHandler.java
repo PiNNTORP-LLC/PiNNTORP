@@ -2,6 +2,7 @@ package com.pinntorp.Server.Api;
 
 import com.pinntorp.WebSockets.WebSocket;
 import com.pinntorp.Server.Console;
+import com.pinntorp.Server.Database;
 
 import java.io.*;
 import java.net.Socket;
@@ -16,6 +17,38 @@ public class ConnectionHandler extends Thread {
     public ConnectionHandler(Socket socket, String webRoot) {
         this.socket = socket;
         this.webRoot = webRoot;
+    }
+
+    private String getRequestBody(InputStream in, int contentLength) throws IOException {
+        if (contentLength <= 0)
+            return "";
+        byte[] body = new byte[contentLength];
+        int read = 0;
+        while (read < contentLength) {
+            read += in.read(body, read, contentLength - read);
+        }
+        return new String(body, "UTF-8");
+    }
+
+    private String extractJsonString(String json, String key) {
+        String search = "\"" + key + "\":\"";
+        int start = json.indexOf(search);
+        if (start == -1)
+            return null;
+        start += search.length();
+        int end = json.indexOf("\"", start);
+        return json.substring(start, end);
+    }
+
+    private void sendJsonResponse(OutputStream out, int statusCode, String message, String status) throws IOException {
+        String json = "{\"status\":\"" + status + "\",\"message\":\"" + message + "\"}";
+        String response = "HTTP/1.1 " + statusCode + " OK\r\n" +
+                "Content-Type: application/json\r\n" +
+                "Content-Length: " + json.length() + "\r\n" +
+                "Access-Control-Allow-Origin: *\r\n\r\n" +
+                json;
+        out.write(response.getBytes("UTF-8"));
+        out.flush();
     }
 
     @Override
@@ -70,12 +103,12 @@ public class ConnectionHandler extends Thread {
                 }
             }
 
-            // Route 1: WebSocket Upgrade
+            // Route 1: WebSocket Upgrade with Auth verification
             if ("websocket".equalsIgnoreCase(headers.get("Upgrade"))) {
+                // If you wanted to do handshake auth, you could read the token query param here
+                // For now allow standard WS connection
                 WebSocket ws = new WebSocket(socket, headers);
-                // In a real app, you'd start a thread to handle incoming ws messages or store
-                // it
-                // For now, let's just loop and read messages
+
                 while (ws.isOpen()) {
                     com.pinntorp.WebSockets.Message msg = ws.receive();
                     if (msg != null && msg.getOpcode() == 1) {
@@ -85,7 +118,61 @@ public class ConnectionHandler extends Thread {
                 return;
             }
 
-            // Route 2: API HTTP Route
+            // Route 2: Register specific user
+            if (path.startsWith("/api/register") && method.equals("POST")) {
+                int contentLen = Integer.parseInt(headers.getOrDefault("Content-Length", "0"));
+                String body = getRequestBody(in, contentLen);
+                String user = extractJsonString(body, "username");
+                String pass = extractJsonString(body, "password");
+                String role = extractJsonString(body, "role"); // Could be null, defaults "user"
+
+                if (user == null || pass == null) {
+                    sendJsonResponse(out, 400, "Username and password required.", "error");
+                } else if (Database.users.containsKey(user)) {
+                    sendJsonResponse(out, 400, "User already exists.", "error");
+                } else {
+                    String salt = AuthHelper.generateSalt();
+                    String hash = AuthHelper.hashPassword(pass, salt);
+                    if (role == null)
+                        role = "user";
+
+                    Database.users.put(user, new Database.UserData(user, role, salt, hash));
+                    Database.save();
+                    sendJsonResponse(out, 201, "Registered successfully.", "success");
+                }
+                socket.close();
+                return;
+            }
+
+            // Route 3: Login to get token
+            if (path.startsWith("/api/login") && method.equals("POST")) {
+                int contentLen = Integer.parseInt(headers.getOrDefault("Content-Length", "0"));
+                String body = getRequestBody(in, contentLen);
+                String user = extractJsonString(body, "username");
+                String pass = extractJsonString(body, "password");
+
+                Database.UserData userData = Database.users.get(user);
+
+                if (user != null && pass != null && userData != null
+                        && AuthHelper.verifyPassword(pass, userData.salt, userData.hash)) {
+                    // Valid password! Grant JWT
+                    String jwt = AuthHelper.generateJWT(user, userData.role);
+                    String json = "{\"status\":\"success\",\"token\":\"" + jwt + "\"}";
+                    String response = "HTTP/1.1 200 OK\r\n" +
+                            "Content-Type: application/json\r\n" +
+                            "Content-Length: " + json.length() + "\r\n" +
+                            "Access-Control-Allow-Origin: *\r\n\r\n" +
+                            json;
+                    out.write(response.getBytes("UTF-8"));
+                    out.flush();
+                } else {
+                    sendJsonResponse(out, 401, "Invalid username or password.", "error");
+                }
+                socket.close();
+                return;
+            }
+
+            // Route 4: API HTTP Route
             if (path.startsWith("/api/state")) {
                 String json = "{\"status\":\"success\",\"message\":\"State loaded via merged single-port HTTP!\"}";
                 String response = "HTTP/1.1 200 OK\r\n" +
@@ -99,9 +186,25 @@ public class ConnectionHandler extends Thread {
                 return;
             }
 
-            // Route 3: Gamble API
+            // Route 5: Gamble API (Requires JWT)
             if (path.startsWith("/api/gamble") && method.equals("POST")) {
-                // Determine slot game result
+                String authHeader = headers.get("Authorization");
+                if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                    sendJsonResponse(out, 403, "Missing JWT Authorization header.", "error");
+                    socket.close();
+                    return;
+                }
+
+                String token = authHeader.substring(7);
+                String verifiedUsername = AuthHelper.validateJWTAndGetUsername(token);
+
+                if (verifiedUsername == null) {
+                    sendJsonResponse(out, 403, "Invalid JWT Token.", "error");
+                    socket.close();
+                    return;
+                }
+
+                // Token is good, determine slot game result
                 int firstNum = (int) (Math.random() * 7) + 1;
                 int secNum = (int) (Math.random() * 7) + 1;
                 int thirdNum = (int) (Math.random() * 7) + 1;
@@ -113,10 +216,9 @@ public class ConnectionHandler extends Thread {
                     profit = 10;
                 }
 
-                // Temporary inline JSON generation for immediate function return
                 String json = String.format(
-                        "{\"nums\": [%d, %d, %d], \"profit\": %d}",
-                        firstNum, secNum, thirdNum, profit);
+                        "{\"nums\": [%d, %d, %d], \"profit\": %d, \"user\":\"%s\"}",
+                        firstNum, secNum, thirdNum, profit, verifiedUsername);
 
                 String response = "HTTP/1.1 200 OK\r\n" +
                         "Content-Type: application/json\r\n" +
@@ -130,7 +232,7 @@ public class ConnectionHandler extends Thread {
                 return;
             }
 
-            // Route 3: Static File Server
+            // Route 6: Static File Server
             if (method.equals("GET")) {
                 if (path.equals("/")) {
                     path = "/index.html";

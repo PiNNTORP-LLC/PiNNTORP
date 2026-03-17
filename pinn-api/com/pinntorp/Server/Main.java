@@ -10,15 +10,24 @@ public class Main {
 
     // Entrypoint
     public static void main(String[] args) {
-        int port = 8080;
-
         // Root directory is generally "../" when compiled inside pinn-api
         // But running locally, root directory of the PiNNTORP repository where
         // index.html lives
         String webRoot = System.getProperty("user.dir") + "/..";
 
+        // Load custom Env variables securely
+        Env.load(webRoot);
+
+        int port = 8080;
+        try {
+            port = Integer.parseInt(Env.get("PORT", "8080"));
+        } catch (NumberFormatException e) {
+            Console.log("Notice: Invalid PORT in .env, defaulting to 8080");
+        }
+
         try {
             Console.log("Starting unified HTTP & WebSocket server on port " + port + "...");
+            Database.load();
             server = new WebSocketServer(port, webRoot);
             server.start();
 
