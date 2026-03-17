@@ -7,17 +7,75 @@ const slotGameApi = getGameApi("slots");
 export function initGameView() {
     const controls = document.getElementById("game-controls");
     const result = document.getElementById("game-result");
+    const dice = document.getElementById("dice");
+
+    const diceRotations = {
+        1: { x: 0, y: 0 },
+        2: { x: 0, y: 180 },
+        3: { x: 0, y: -90 },
+        4: { x: 0, y: 90 },
+        5: { x: -90, y: 0 },
+        6: { x: 90, y: 0 }
+    };
 
     [1, 2, 3, 4, 5, 6].forEach((value) => {
         const button = document.createElement("button");
         button.type = "button";
         button.textContent = String(value);
         button.addEventListener("click", async () => {
+            if (button.disabled) return;
+
+            const buttons = controls.querySelectorAll("button");
+            buttons.forEach(btn => btn.disabled = true);
+            result.textContent = "Rolling...";
+
+            // 1. Physics-based toss animation
+            // Reset rotation to simple range to prevent massive numbers hanging
+            gsap.set(dice, { rotationX: 0, rotationY: 0, rotationZ: 0 });
+
+            const tossTl = gsap.timeline();
+
+            tossTl.to(dice, {
+                duration: 0.6,
+                y: -150,
+                scale: 1.2,
+                rotationX: 720,
+                rotationY: 1080,
+                rotationZ: 360,
+                ease: "power2.out"
+            }).to(dice, {
+                duration: 0.6,
+                y: 0,
+                scale: 1.0,
+                rotationX: 1440,
+                rotationY: 2160,
+                rotationZ: 720,
+                ease: "power2.in"
+            });
+
+            // 2. Fetch the result in parallel
             const round = await diceGameApi.play(value);
-            result.textContent = round.won
-                ? `Win: guessed ${round.guess}, rolled ${round.roll}`
-                : `Loss: guessed ${round.guess}, rolled ${round.roll}`;
-            renderStats();
+
+            // 3. Wait for toss to finish
+            await tossTl;
+
+            // 4. Final crisp landing
+            const final = diceRotations[round.roll];
+
+            gsap.to(dice, {
+                duration: 0.8,
+                rotationX: 1440 + final.x,
+                rotationY: 2160 + final.y,
+                rotationZ: 720,
+                ease: "elastic.out(1, 0.75)",
+                onComplete: () => {
+                    result.textContent = round.won
+                        ? `🎉 Win! Guessed ${round.guess}, rolled ${round.roll}`
+                        : `❌ Loss. Guessed ${round.guess}, rolled ${round.roll}`;
+                    renderStats();
+                    buttons.forEach(btn => btn.disabled = false);
+                }
+            });
         });
         controls.appendChild(button);
     });
