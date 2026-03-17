@@ -8,13 +8,13 @@ echo Compiling Java Server Application...
 cd pinn-api
 if not exist build mkdir build
 dir /s /B *.java > sources.txt
-javac -d build @sources.txt
+javac -cp "lib/*;build" -d build @sources.txt
 del sources.txt
 
 echo.
 echo Starting PiNNTORP Server...
 echo.
-java -cp build com.pinntorp.Server.Main
+java -cp "lib/*;build" com.pinntorp.Server.Main
 
 popd
 endlocal

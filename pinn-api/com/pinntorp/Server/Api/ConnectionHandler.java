@@ -172,9 +172,34 @@ public class ConnectionHandler extends Thread {
                 return;
             }
 
-            // Route 4: API HTTP Route
-            if (path.startsWith("/api/state")) {
-                String json = "{\"status\":\"success\",\"message\":\"State loaded via merged single-port HTTP!\"}";
+            // Route 4: API HTTP Route (Fetch User State)
+            if (path.startsWith("/api/state") && method.equals("GET")) {
+                String authHeader = headers.get("Authorization");
+                if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                    sendJsonResponse(out, 403, "Missing JWT Authorization header.", "error");
+                    socket.close();
+                    return;
+                }
+
+                String token = authHeader.substring(7);
+                String verifiedUsername = AuthHelper.validateJWTAndGetUsername(token);
+
+                if (verifiedUsername == null) {
+                    sendJsonResponse(out, 403, "Invalid JWT Token.", "error");
+                    socket.close();
+                    return;
+                }
+
+                Database.UserData user = Database.users.get(verifiedUsername);
+                if (user == null) {
+                    sendJsonResponse(out, 404, "User not found in database.", "error");
+                    socket.close();
+                    return;
+                }
+
+                String json = String.format(
+                        "{\"status\":\"success\", \"gamesPlayed\":%d, \"wins\":%d, \"losses\":%d, \"profit\":%d}",
+                        user.gamesPlayed, user.wins, user.losses, user.profit);
                 String response = "HTTP/1.1 200 OK\r\n" +
                         "Content-Type: application/json\r\n" +
                         "Content-Length: " + json.length() + "\r\n" +
@@ -216,9 +241,24 @@ public class ConnectionHandler extends Thread {
                     profit = 10;
                 }
 
+                Database.UserData user = Database.users.get(verifiedUsername);
+                if (user != null) {
+                    user.gamesPlayed++;
+                    if (profit > 0)
+                        user.wins++;
+                    else
+                        user.losses++;
+                    user.profit += profit;
+                    Database.save();
+                }
+
                 String json = String.format(
-                        "{\"nums\": [%d, %d, %d], \"profit\": %d, \"user\":\"%s\"}",
-                        firstNum, secNum, thirdNum, profit, verifiedUsername);
+                        "{\"nums\": [%d, %d, %d], \"profit\": %d, \"user\":\"%s\", \"stats\": {\"gamesPlayed\":%d, \"wins\":%d, \"losses\":%d, \"profit\":%d}}",
+                        firstNum, secNum, thirdNum, profit, verifiedUsername,
+                        user != null ? user.gamesPlayed : 0,
+                        user != null ? user.wins : 0,
+                        user != null ? user.losses : 0,
+                        user != null ? user.profit : 0);
 
                 String response = "HTTP/1.1 200 OK\r\n" +
                         "Content-Type: application/json\r\n" +

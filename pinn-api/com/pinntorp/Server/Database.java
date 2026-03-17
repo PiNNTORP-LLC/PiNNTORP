@@ -1,21 +1,46 @@
 package com.pinntorp.Server;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.Reader;
+import java.io.Writer;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 
 /**
- * Super lightweight JSON Database manager for users & roles.
+ * Super lightweight JSON Database manager for users, powered by Gson.
  */
 public class Database {
     private static final String DB_FILE = "users.json";
+    private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     // In-memory cache of users: Username -> UserData
     public static Map<String, UserData> users = new HashMap<>();
+
+    public static class GameLog {
+        public String gameName;
+        public int profit;
+        public long timestamp;
+        public String metadata; // e.g. "Guessed 2, Rolled 4"
+
+        public GameLog() {
+        } // Empty constructor for Gson
+
+        public GameLog(String gameName, int profit, long timestamp, String metadata) {
+            this.gameName = gameName;
+            this.profit = profit;
+            this.timestamp = timestamp;
+            this.metadata = metadata;
+        }
+    }
 
     public static class UserData {
         public String username;
@@ -23,92 +48,68 @@ public class Database {
         public String salt; // Base64 Secure Random
         public String hash; // Base64 SHA-256 Hash
 
+        // High-Level Statistics
+        public int gamesPlayed;
+        public int wins;
+        public int losses;
+        public int profit;
+
+        // Social Features
+        public List<String> friends = new ArrayList<>();
+
+        // Game Logs
+        public List<GameLog> gameLogs = new ArrayList<>();
+
         public UserData(String username, String role, String salt, String hash) {
+            this(username, role, salt, hash, 0, 0, 0, 0);
+        }
+
+        public UserData(String username, String role, String salt, String hash, int gamesPlayed, int wins, int losses,
+                int profit) {
             this.username = username;
             this.role = role;
             this.salt = salt;
             this.hash = hash;
+            this.gamesPlayed = gamesPlayed;
+            this.wins = wins;
+            this.losses = losses;
+            this.profit = profit;
+            this.friends = new ArrayList<>();
+            this.gameLogs = new ArrayList<>();
         }
 
         public String toJson() {
-            return String.format(
-                    "{\"username\":\"%s\", \"role\":\"%s\", \"salt\":\"%s\", \"hash\":\"%s\"}",
-                    username, role, salt, hash);
+            // For endpoints that return UserData (though now we can just return the object
+            // and let the router format it!)
+            return gson.toJson(this);
         }
     }
 
     public static void load() {
         File f = new File(DB_FILE);
         if (!f.exists()) {
-            Console.log("DB File missing, starting a fresh empty database.");
+            System.out.println("DB File missing, starting a fresh empty database.");
             return;
         }
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(f))) {
-            StringBuilder jsonStr = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null)
-                jsonStr.append(line);
-
-            String content = jsonStr.toString().trim();
-            if (content.isEmpty() || content.equals("{}"))
-                return;
-
-            // Very rudimentary manual string-based JSON Parsing because we don't have
-            // Jackson
-            // Expected format: { "username": {"username": "str", "role": "str", "salt":
-            // "str", "hash": "str"}, ... }
-            content = content.substring(1, content.length() - 1); // remove outer keys
-            String[] userBlocks = content.split("},");
-
-            for (String block : userBlocks) {
-                if (!block.endsWith("}"))
-                    block += "}"; // Repair ending bracket from split
-
-                String username = extractJsonVal(block, "username");
-                String role = extractJsonVal(block, "role");
-                String salt = extractJsonVal(block, "salt");
-                String hash = extractJsonVal(block, "hash");
-
-                if (username != null) {
-                    users.put(username, new UserData(username, role, salt, hash));
-                }
+        try (Reader reader = new FileReader(f)) {
+            Type type = new TypeToken<Map<String, UserData>>() {
+            }.getType();
+            Map<String, UserData> loadedData = gson.fromJson(reader, type);
+            if (loadedData != null) {
+                users = loadedData;
             }
-            Console.log("Database initialized. Loaded " + users.size() + " users.");
+            System.out.println("Database initialized. Loaded " + users.size() + " users.");
         } catch (Exception e) {
-            Console.log("Failed to load JSON DB: " + e.getMessage());
+            System.out.println("Failed to load JSON DB: " + e.getMessage());
         }
     }
 
     public static void save() {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(DB_FILE))) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("{\n");
-
-            int count = 0;
-            for (UserData data : users.values()) {
-                sb.append("  \"").append(data.username).append("\": ");
-                sb.append(data.toJson());
-                if (++count < users.size()) {
-                    sb.append(",");
-                }
-                sb.append("\n");
-            }
-
-            sb.append("}");
-            writer.write(sb.toString());
+        try (Writer writer = new FileWriter(DB_FILE)) {
+            gson.toJson(users, writer);
         } catch (Exception e) {
-            Console.log("Failed to save JSON DB: " + e.getMessage());
+            System.out.println("Failed to save JSON DB: " + e.getMessage());
         }
-    }
-
-    private static String extractJsonVal(String json, String key) {
-        String search = "\"" + key + "\":\"";
-        int start = json.indexOf(search);
-        if (start == -1)
-            return null;
-        start += search.length();
-        int end = json.indexOf("\"", start);
-        return json.substring(start, end);
     }
 }

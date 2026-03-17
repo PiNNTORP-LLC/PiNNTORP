@@ -15,15 +15,10 @@ async function playSlotRound() {
         const data = await response.json();
 
         // Update user state based on backend profit calculations
-        const user = state.users[state.currentUser];
-        user.gamesPlayed += 1;
-
-        if (data.profit > 0) {
-            user.wins += 1;
-        } else {
-            user.losses += 1;
+        if (data.stats) {
+            const user = state.users[state.currentUser];
+            Object.assign(user, data.stats);
         }
-        user.profit += data.profit;
 
         saveState(state);
         return data.nums;

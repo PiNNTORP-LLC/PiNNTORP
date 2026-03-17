@@ -46,10 +46,8 @@
         </div>
     </div>
 
-    <div id="app-section" class="hidden"
-        style="width: 100%; max-width: 1000px; display: flex; flex-direction: column; gap: 2rem;">
-        <header
-            style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e5e7eb; padding-bottom: 1rem;">
+    <div id="app-section" class="hidden app-container">
+        <header class="app-header">
             <h1 style="margin: 0; font-size: 2rem;">PiNNTORP</h1>
             <div style="display: flex; align-items: center; gap: 1.5rem;">
                 <span style="font-size: 1.05rem; color: #4b5563;">Logged in as: <strong id="logged-in-user"
@@ -59,25 +57,29 @@
             </div>
         </header>
 
-        <main class="layout">
-            <div class="column">
-                <section>
-                    <h2>Friends</h2>
-                    <form id="friend-form">
-                        <input id="friend-name" type="text" placeholder="Friend name" required>
-                        <button type="submit">Add</button>
-                    </form>
-                    <ul id="friends-list"></ul>
-                </section>
+        <div class="app-body">
+            <aside class="sidebar">
+                <section class="profile-section">
+                    <h2>Profile</h2>
 
-                <section>
-                    <h2>Stats</h2>
-                    <div id="stats-view"></div>
-                    <button id="reset-stats" type="button">Reset</button>
-                </section>
-            </div>
+                    <div style="margin-bottom: 2rem;">
+                        <h3 class="subsection-title">Stats</h3>
+                        <div id="stats-view"></div>
+                        <button id="reset-stats" type="button" class="secondary-btn">Reset Stats</button>
+                    </div>
 
-            <div class="column">
+                    <div>
+                        <h3 class="subsection-title">Friends</h3>
+                        <form id="friend-form" class="friend-form">
+                            <input id="friend-name" type="text" placeholder="Friend name" required>
+                            <button type="submit">Add</button>
+                        </form>
+                        <ul id="friends-list"></ul>
+                    </div>
+                </section>
+            </aside>
+
+            <main class="main-content">
                 <div class="tabs-container">
                     <button class="tab-btn active" data-tab="slots-tab">Slots</button>
                     <button class="tab-btn" data-tab="dice-tab">Dice Roll</button>
@@ -105,8 +107,8 @@
                     <div id="game-controls"></div>
                     <p id="game-result">No games played yet.</p>
                 </section>
-            </div>
-        </main>
+            </main>
+        </div>
     </div>
 
     <script type="module" src="js/app.js"></script>
