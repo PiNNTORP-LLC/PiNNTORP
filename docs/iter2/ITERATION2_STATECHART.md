@@ -13,19 +13,19 @@ stateDiagram-v2
         ValidatingHeaders --> [*]: Headers Invalid
     }
     
-    Handshaking --> Open: Handshake Complete\n(open = true)
-    Handshaking --> Closed: Handshake Failed\n(close() called)
+    Handshaking --> Open: Handshake Complete</br>(open = true)
+    Handshaking --> Closed: Handshake Failed</br>(close() called)
     
     state Open {
         [*] --> Idle
         Idle --> Receiving: receive() called
-        Receiving --> Idle: Frame Received\n(opcode != 8)
+        Receiving --> Idle: Frame Received</br>(opcode != 8)
         
         Idle --> Sending: send() called
         Sending --> Idle: Data Sent
     }
     
-    Open --> Closing_ClientInitiated: Receive Close Frame\n(opcode 8)
+    Open --> Closing_ClientInitiated: Receive Close Frame</br>(opcode 8)
     Open --> Closing_ServerInitiated: close() called
     
     state Closing_ClientInitiated {
@@ -36,14 +36,14 @@ stateDiagram-v2
     state Closing_ServerInitiated {
         [*] --> SendCloseRequest: Send Status 1000
         SendCloseRequest --> WaitConfirmation: receive() loop
-        WaitConfirmation --> [*]: Recv Close Frame\n(opcode 8)
+        WaitConfirmation --> [*]: Recv Close Frame</br>(opcode 8)
     }
     
     Closing_ClientInitiated --> Closed: Finish Close
     Closing_ServerInitiated --> Closed: Finish Close
     
     state Closed {
-        [*] --> CloseSocket: socket.close()\n(open = false)
+        [*] --> CloseSocket: socket.close()</br>(open = false)
         CloseSocket --> [*]
     }
 
