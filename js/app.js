@@ -4,6 +4,9 @@ import { initGameView } from "./game/gameView.js";
 import { initFriendsView } from "./friends/friendsView.js";
 import { initStatsView } from "./stats/statsView.js";
 import { initSlotView } from "./game/gameView.js";
+import { initNetwork } from "./core/network.js";
+
+const ws = initNetwork();
 
 replaceState(loadState());
 initSlotView();

@@ -1,45 +1,20 @@
 @echo off
 setlocal
 
-REM Always run from the folder this script lives in (repo root when committed there)
+REM Navigate to the directory where this script resides
 pushd "%~dp0"
 
-set PORT=5500
-set URL=http://localhost:%PORT%/
-
-echo Starting local server in:
-echo %CD%
-echo.
-
-where python >nul 2>nul
-if %ERRORLEVEL%==0 (
-  start "" "%URL%"
-  echo Using Python http.server on port %PORT%
-  python -m http.server %PORT%
-  goto :end
-)
-
-where py >nul 2>nul
-if %ERRORLEVEL%==0 (
-  start "" "%URL%"
-  echo Using py launcher http.server on port %PORT%
-  py -m http.server %PORT%
-  goto :end
-)
-
-where npx >nul 2>nul
-if %ERRORLEVEL%==0 (
-  start "" "%URL%"
-  echo Using npx serve
-  npx serve . -l %PORT%
-  goto :end
-)
+echo Compiling Java Server Application...
+cd pinn-api
+if not exist build mkdir build
+dir /s /B *.java > sources.txt
+javac -d build @sources.txt
+del sources.txt
 
 echo.
-echo Could not find Python or npx on PATH.
-echo Install Python or Node.js, then run this file again.
-pause
+echo Starting PiNNTORP Server...
+echo.
+java -cp build com.pinntorp.Server.Main
 
-:end
 popd
 endlocal
