@@ -19,7 +19,7 @@ import java.util.Map;
  * Super lightweight JSON Database manager for users, powered by Gson.
  */
 public class Database {
-    private static final String DB_FILE = "users.json";
+    private static final String DB_FILE = Env.get("DB_PATH", "data/users.json");
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     // In-memory cache of users: Username -> UserData
@@ -87,8 +87,13 @@ public class Database {
 
     public static void load() {
         File f = new File(DB_FILE);
+        File parent = f.getParentFile();
+        if (parent != null && !parent.exists()) {
+            parent.mkdirs();
+        }
+
         if (!f.exists()) {
-            System.out.println("DB File missing, starting a fresh empty database.");
+            System.out.println("DB File missing (" + DB_FILE + "), starting a fresh empty database.");
             return;
         }
 
@@ -106,7 +111,13 @@ public class Database {
     }
 
     public static void save() {
-        try (Writer writer = new FileWriter(DB_FILE)) {
+        File f = new File(DB_FILE);
+        File parent = f.getParentFile();
+        if (parent != null && !parent.exists()) {
+            parent.mkdirs();
+        }
+
+        try (Writer writer = new FileWriter(f)) {
             gson.toJson(users, writer);
         } catch (Exception e) {
             System.out.println("Failed to save JSON DB: " + e.getMessage());

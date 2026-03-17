@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  pinntorp:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - pinntorp_data:/app/pinn-api/data
+    environment:
+      - PORT=8080
+      - DB_PATH=data/users.json
+    restart: always
+
+volumes:
+  pinntorp_data:
+
+
