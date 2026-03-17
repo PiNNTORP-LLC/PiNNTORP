@@ -1,4 +1,24 @@
 export function initTabs() {
+    // 1. Sidebar Navigation Logic
+    const navBtns = document.querySelectorAll('.nav-btn');
+    const appViews = document.querySelectorAll('.app-view');
+
+    navBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetViewId = btn.getAttribute('data-view');
+
+            // Deactivate all nav buttons and hide all views
+            navBtns.forEach(b => b.classList.remove('active'));
+            appViews.forEach(v => v.classList.add('hidden'));
+
+            // Activate target
+            btn.classList.add('active');
+            const targetView = document.getElementById(targetViewId);
+            if (targetView) targetView.classList.remove('hidden');
+        });
+    });
+
+    // 2. Games Inner-Tab Logic
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabPanels = document.querySelectorAll('.game-panel');
 

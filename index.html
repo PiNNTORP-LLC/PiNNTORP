@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>PiNNTORP</title>
     <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 </head>
 
 <body>
@@ -58,55 +59,71 @@
         </header>
 
         <div class="app-body">
-            <aside class="sidebar">
-                <section class="profile-section">
-                    <h2>Profile</h2>
-
-                    <div style="margin-bottom: 2rem;">
-                        <h3 class="subsection-title">Stats</h3>
-                        <div id="stats-view"></div>
-                        <button id="reset-stats" type="button" class="secondary-btn">Reset Stats</button>
-                    </div>
-
-                    <div>
-                        <h3 class="subsection-title">Friends</h3>
-                        <form id="friend-form" class="friend-form">
-                            <input id="friend-name" type="text" placeholder="Friend name" required>
-                            <button type="submit">Add</button>
-                        </form>
-                        <ul id="friends-list"></ul>
-                    </div>
-                </section>
+            <aside class="sidebar-nav">
+                <nav class="nav-menu">
+                    <button class="nav-btn active" data-view="games-view">
+                        <span class="nav-icon">🎮</span> Games
+                    </button>
+                    <button class="nav-btn" data-view="profile-view">
+                        <span class="nav-icon">👤</span> Profile
+                    </button>
+                </nav>
             </aside>
 
             <main class="main-content">
-                <div class="tabs-container">
-                    <button class="tab-btn active" data-tab="slots-tab">Slots</button>
-                    <button class="tab-btn" data-tab="dice-tab">Dice Roll</button>
+                <!-- GAMES VIEW -->
+                <div id="games-view" class="app-view">
+                    <div class="tabs-container">
+                        <button class="tab-btn active" data-tab="slots-tab">Slots</button>
+                        <button class="tab-btn" data-tab="dice-tab">Dice Roll</button>
+                    </div>
+
+                    <section id="slots-tab" class="slots game-panel">
+                        <h2>Slots</h2>
+                        <div class="slot-row">
+                            <div class="slot-nums">
+                                <h3 id="first-num">One</h3>
+                            </div>
+                            <div class="slot-nums">
+                                <h3 id="second-num">Two</h3>
+                            </div>
+                            <div class="slot-nums">
+                                <h3 id="third-num">Three</h3>
+                            </div>
+                        </div>
+                        <button id="slot-roll" type="button">Roll</button>
+                    </section>
+
+                    <section id="dice-tab" class="game-panel hidden">
+                        <h2>Dice Roll</h2>
+                        <p>Pick a number 1-6.</p>
+                        <div id="game-controls"></div>
+                        <p id="game-result">No games played yet.</p>
+                    </section>
                 </div>
 
-                <section id="slots-tab" class="slots game-panel">
-                    <h2>Slots</h2>
-                    <div class="slot-row">
-                        <div class="slot-nums">
-                            <h3 id="first-num">One</h3>
-                        </div>
-                        <div class="slot-nums">
-                            <h3 id="second-num">Two</h3>
-                        </div>
-                        <div class="slot-nums">
-                            <h3 id="third-num">Three</h3>
-                        </div>
-                    </div>
-                    <button id="slot-roll" type="button">Roll</button>
-                </section>
+                <!-- PROFILE VIEW -->
+                <div id="profile-view" class="app-view hidden">
+                    <section class="profile-section">
+                        <h2>Profile</h2>
 
-                <section id="dice-tab" class="game-panel hidden">
-                    <h2>Dice Roll</h2>
-                    <p>Pick a number 1-6.</p>
-                    <div id="game-controls"></div>
-                    <p id="game-result">No games played yet.</p>
-                </section>
+                        <div style="margin-bottom: 2rem;">
+                            <h3 class="subsection-title">Stats</h3>
+                            <div id="stats-view"></div>
+                            <button id="reset-stats" type="button" class="secondary-btn"
+                                style="margin-top: 0.75rem;">Reset Stats</button>
+                        </div>
+
+                        <div>
+                            <h3 class="subsection-title">Friends</h3>
+                            <form id="friend-form" class="friend-form" style="display: flex; gap: 0.5rem;">
+                                <input id="friend-name" type="text" placeholder="Friend name" required style="flex: 1;">
+                                <button type="submit">Add</button>
+                            </form>
+                            <ul id="friends-list"></ul>
+                        </div>
+                    </section>
+                </div>
             </main>
         </div>
     </div>
