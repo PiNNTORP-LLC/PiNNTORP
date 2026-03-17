@@ -15,18 +15,17 @@ import java.net.Socket;
  * https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_servers
  * https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
  */
-public class WebSocketServer extends Thread
-{
+public class WebSocketServer extends Thread {
     private ServerSocket serverSocket = null;
     private volatile boolean running = true;
 
     /**
      * Creates a WebSocket server that will listen for incoming
      * connections on the specified port.
-     * @param port  the port to listen on
+     * 
+     * @param port the port to listen on
      */
-    WebSocketServer(int port) throws IOException
-    {
+    public WebSocketServer(int port) throws IOException {
         this.serverSocket = new ServerSocket(port);
     }
 
@@ -34,8 +33,7 @@ public class WebSocketServer extends Thread
      * Sets the running flag of the listening loop to false,
      * allowing the server to gracefully stop.
      */
-    public void requestStop()
-    {
+    public void requestStop() {
         this.running = false;
     }
 
@@ -44,20 +42,17 @@ public class WebSocketServer extends Thread
      * This is the internal thread run method
      */
     @Override
-    public void run()
-    {
+    public void run() {
         // Listening loop
-        while(running)
-        {
-            try
-            {
+        while (running) {
+            try {
                 // Accept incoming connection
                 Socket clientTcp = this.serverSocket.accept();
                 WebSocket clientWs = new WebSocket(clientTcp);
-            }
-            catch(Exception e)
-            {
-                System.out.println("Encountered " + e.getClass().getName() + " while trying to accept an incoming WebSocket connection.\nTrace:\n" + e.getStackTrace() + "\nException:\n" + e);
+            } catch (Exception e) {
+                System.out.println("Encountered " + e.getClass().getName()
+                        + " while trying to accept an incoming WebSocket connection.\nTrace:\n" + e.getStackTrace()
+                        + "\nException:\n" + e);
             }
         }
     }
