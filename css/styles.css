@@ -3,83 +3,117 @@
 }
 
 body {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 1rem;
-    line-height: 1.4;
+    max-width: 900px;
+    margin: 20px auto;
+    padding: 20px;
     font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    color: #333;
 }
 
-h1,
-h2,
-h3,
-p {
+h1 {
+    text-align: center;
+    color: #000;
+    border-bottom: 2px solid #333;
+    padding-bottom: 10px;
+}
+
+h2 {
+    color: #444;
+    font-size: 1.25rem;
     margin-top: 0;
+    border-bottom: 1px dashed #ccc;
+    padding-bottom: 5px;
 }
 
 .layout {
     display: flex;
-    gap: 1rem;
+    gap: 20px;
     align-items: flex-start;
 }
 
 .column {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
 section {
-    border: 1px solid #ccc;
-    padding: 0.75rem;
-    margin-bottom: 0.75rem;
+    border: 1px solid #999;
+    padding: 15px;
     background: #fff;
+    border-radius: 4px;
 }
 
 button {
-    padding: 0.35rem 0.7rem;
+    background-color: #e0e0e0;
+    border: 1px solid #888;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-family: Arial, sans-serif;
+    color: #000;
 }
 
-button,
+button:hover {
+    background-color: #ccc;
+}
+
+button:active {
+    background-color: #bbb;
+}
+
 input {
-    margin-right: 0.4rem;
-}
-
-ul {
-    padding-left: 1.2rem;
-}
-
-li {
-    margin: 0.25rem 0;
-}
-
-#game-controls {
-    margin-bottom: 0.75rem;
-}
-
-#friend-form {
-    margin-bottom: 0.75rem;
+    border: 1px solid #aaa;
+    padding: 4px;
+    font-family: Arial, sans-serif;
 }
 
 .slot-row {
-    margin: 0.75rem 0;
+    margin: 15px 0;
     display: flex;
-    gap: 0.75rem;
+    gap: 10px;
     text-align: center;
 }
 
 .slot-nums {
     flex: 1;
-    color: #1b2049;
-    background: #d9e1ef;
-    border-radius: 6px;
-    padding: 0.9rem 0.5rem;
+    color: #000;
+    background: #eee;
+    border: 1px solid #777;
+    border-radius: 4px;
+    padding: 15px 5px;
 }
 
-@media (max-width: 560px) {
-    .layout {
-        flex-direction: column;
-    }
+.slot-nums h3 {
+    margin: 0;
+    font-size: 1.5rem;
+}
 
-    .slot-row {
+ul {
+    padding-left: 20px;
+    margin: 10px 0 0 0;
+}
+
+li {
+    margin: 5px 0;
+}
+
+#game-controls {
+    margin-top: 10px;
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+#game-result {
+    margin-top: 15px;
+    font-weight: bold;
+    color: #d00;
+}
+
+@media (max-width: 600px) {
+    .layout {
         flex-direction: column;
     }
 }
