@@ -23,9 +23,6 @@ public class ControlWindow extends JFrame
         this.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                // Perform clean-up
-                Main.clean();
-
                 // Close the frame, exit the application
                 super.windowClosing(e);
             }
