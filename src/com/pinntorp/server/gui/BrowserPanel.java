@@ -1,4 +1,4 @@
-package com.pinntorp.Server.Interface;
+package com.pinntorp.server.gui;
 
 import javax.swing.*;
 

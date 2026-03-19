@@ -1,6 +1,6 @@
-package com.pinntorp.Server.Interface;
+package com.pinntorp.server.gui;
 
-import com.pinntorp.Server.Main;
+import com.pinntorp.server.Main;
 
 import javax.swing.*;
 import java.awt.*;

@@ -1,8 +1,6 @@
-package com.pinntorp.Server;
+package com.pinntorp.server;
 
 import javax.swing.*;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.ConcurrentLinkedQueue;

@@ -1,4 +1,4 @@
-package com.pinntorp.Server;
+package com.pinntorp.server;
 
 import com.google.gson.Gson;
 
