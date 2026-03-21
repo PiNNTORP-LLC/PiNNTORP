@@ -54,9 +54,6 @@ public class Console
      */
     public static String poll()
     {
-        // Write the message into the current log file. This is to keep file writing thread-safe
-
-
         // Return the message
         return messageBuffer.poll();
     }
