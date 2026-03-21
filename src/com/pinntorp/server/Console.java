@@ -5,6 +5,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * This class implements the central console adapter that allows all threads to concurrently write
@@ -14,14 +15,14 @@ public class Console
 {
     private static final ConcurrentLinkedQueue<String> messageBuffer = new ConcurrentLinkedQueue<>();
     private static final AtomicBoolean flushScheduled = new AtomicBoolean(false);
-    private static Runnable flushFunction = null;
+    private static final AtomicReference<Runnable> flushFunction = new AtomicReference<>(null);
 
     /**
      * Set the flush function to the provided method.
      */
     public static void setFlushFunction(Runnable flushFunc)
     {
-        flushFunction = flushFunc;
+        flushFunction.set(flushFunc);
     }
 
     /**
@@ -42,9 +43,10 @@ public class Console
         messageBuffer.add(LocalTime.now().format(DateTimeFormatter.ofPattern("hh:mm:ss a")) + " [" + source + "] " + message);
 
         // Flush if flush not scheduled and flush function is set
-        if(flushFunction != null && flushScheduled.compareAndSet(false, true))
+        Runnable flusher = flushFunction.get();
+        if(flusher != null && flushScheduled.compareAndSet(false, true))
         {
-            SwingUtilities.invokeLater(flushFunction);
+            SwingUtilities.invokeLater(flusher);
         }
     }
 
