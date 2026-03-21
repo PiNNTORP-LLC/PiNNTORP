@@ -1,9 +1,8 @@
 package com.pinntorp.server.handlers;
 
-import com.pinntorp.server.Console;
-import com.pinntorp.server.Json;
-import com.pinntorp.server.User;
-import com.pinntorp.server.UserStore;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.pinntorp.server.*;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -19,104 +18,79 @@ import java.security.SecureRandom;
 public class LoginHandler implements HttpHandler
 {
     private final UserStore userStore;
-    private final SecureRandom random;
+    private final SessionManager sessionManager;
 
-    public LoginHandler(UserStore userStore)
+    public LoginHandler(UserStore userStore, SessionManager sessionManager)
     {
         this.userStore = userStore;
-        this.random = new SecureRandom();
-    }
-
-    /**
-     * This class is the Java object blueprint for the JSON auth request objects
-     */
-    public class LoginRequest
-    {
-        String action;      // the requested action (login, register, or logout)
-        String username;    // the username of the requested user
-        String passwordHash;// the password hash of the requested user
-    }
-
-    public class LoginResponse
-    {
-        LoginResponse(int playerID, String sessionID)
-        {
-            this.playerID = playerID;
-            this.sessionID = sessionID;
-        }
-
-        int playerID;
-        String sessionID;
+        this.sessionManager = sessionManager;
     }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException
     {
-        // Check if the correct method was used
-        if(!exchange.getRequestMethod().equalsIgnoreCase("POST"))
-        {
-            // Respond with HTTP error 405 Method Not Allowed if POST not used
-            exchange.sendResponseHeaders(405, -1);
-            Console.log("LoginHandler", "There was an attempt to use \"" + exchange.getRequestMethod() + "\" on the \"/login\" endpoint.");
-            return;
-        }
-
         try
         {
+            // Check if the correct method was used
+            if(!exchange.getRequestMethod().equalsIgnoreCase("POST"))
+            {
+                // Respond with HTTP error 405 Method Not Allowed if POST not used
+                exchange.sendResponseHeaders(405, -1);
+                Console.log("LoginHandler", "There was an attempt to use \"" + exchange.getRequestMethod() + "\" on the \"/login\" endpoint.");
+                return;
+            }
+
             // Parse request JSON
             InputStreamReader reader = new InputStreamReader(exchange.getRequestBody());
-            LoginRequest request = Json.GSON.fromJson(reader, LoginRequest.class);
+            JsonObject request = JsonParser.parseReader(reader).getAsJsonObject();
             reader.close();
 
-            // Get requested user
-            User requestedUser = this.userStore.getUser(request.username);
+            // Get the request parameters
+            String action = request.get("action").getAsString();
+            String username = request.get("username").getAsString();
+            String password = request.get("password").getAsString();
 
-            // Check request action
-            if(request.action.equals("login") && requestedUser != null)
+            // Create the response
+            JsonObject response = new JsonObject();
+
+            // Check and perform requested action
+            if(action.equals("register"))
             {
-                // Check if password hash equals and user exists
-                if(requestedUser.getPasswordHash().equals(request.passwordHash))
-                {
-                    // Generate session ID
-                    String sessionID = requestedUser.generateSessionID(this.random);
-
-                    // Set and send response headers
-                    exchange.getResponseHeaders().set("Content-Type", "application/json");
-                    exchange.sendResponseHeaders(200, 0);
-
-                    // Write response
-                    OutputStreamWriter responseWriter = new OutputStreamWriter(exchange.getResponseBody());
-                    Json.GSON.toJson(new LoginResponse(requestedUser.getPlayerID(), sessionID), responseWriter);
-                    responseWriter.close();
-                }
+                // Create new user and start session
+                int playerID = this.userStore.register(username, password);
+                String sessionID = this.sessionManager.startSession(playerID);
+                response.addProperty("sessionID", sessionID);
+                response.addProperty("success", true);
             }
-            else if(request.action.equals("register"))
+            else if(action.equals("login"))
             {
-                // Create user and generate session ID
-                requestedUser = this.userStore.newUser(request.username, request.passwordHash);
-                String sessionID = requestedUser.generateSessionID(this.random);
-
-                // Set and send response headers
-                exchange.getResponseHeaders().set("Content-Type", "application/json");
-                exchange.sendResponseHeaders(200, 0);
-
-                // Write response
-                OutputStreamWriter responseWriter = new OutputStreamWriter(exchange.getResponseBody());
-                Json.GSON.toJson(new LoginResponse(requestedUser.getPlayerID(), sessionID), responseWriter);
-                responseWriter.close();
+                // Get user and start session
+                int playerID = this.userStore.login(username, password);
+                String sessionID = this.sessionManager.startSession(playerID);
+                response.addProperty("sessionID", sessionID);
+                response.addProperty("success", true);
             }
-            else if(request.action.equals("logout"))
+            else if(action.equals("logout"))
             {
-                // Invalidate user session and send response
-                requestedUser.invalidateSessionID();
-                exchange.sendResponseHeaders(200, -1);
+                // Get and end session
+                String sessionID = request.get("sessionID").getAsString();
+                Session session = this.sessionManager.endSession(sessionID);
+                response.addProperty("success", true);
             }
             else
             {
-                // Unsupported action, send HTTP error code 400 Bas Request
-                Console.log("LoginHandler", "Unsupported action \"" + request.action + "\" requested.");
-                exchange.sendResponseHeaders(400, -1);
+                // Unsupported action, respond with failure
+                exchange.sendResponseHeaders(400, 0);
+                response.addProperty("error", "Unsupported action requested.");
+                Console.log("LoginHandler", "Unsupported action \"" + action + "\" requested.");
             }
+
+            // Respond
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, 0);
+            OutputStreamWriter writer = new OutputStreamWriter(exchange.getResponseBody());
+            Json.GSON.toJson(response, writer);
+            writer.close();
         }
         catch(Exception e)
         {
