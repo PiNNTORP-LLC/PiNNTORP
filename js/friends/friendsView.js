@@ -28,6 +28,9 @@ export function initFriendsView() {
     const form = document.getElementById("friend-form");
     const input = document.getElementById("friend-name");
 
+    // check if elements exist
+    if (!list || !form || !input) return;
+
     renderFriends(list);
 
     form.addEventListener("submit", (event) => {
