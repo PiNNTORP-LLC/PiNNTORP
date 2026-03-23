@@ -49,6 +49,8 @@ The frontend follows a modular design pattern
 
 ```
 app.js
+├── account/
+│   └── account.js      ← Account logic
 ├── core/
 │   ├── state.js        ← Centralized application state
 │   └── storage.js      ← localStorage abstraction
