@@ -24,6 +24,7 @@ beforeEach(() => {
         currentUser: "main_user",
         users: {
             main_user: {
+                balance: 165,
                 gamesPlayed: 12,
                 wins: 8,
                 losses: 4,
@@ -37,6 +38,7 @@ beforeEach(() => {
 
 test("getStats returns the saved totals", () => {
     assert.deepEqual(getStats(), {
+        balance: 165,
         wins: 8,
         losses: 4,
         gamesPlayed: 12,
@@ -50,6 +52,7 @@ test("getStats handles zero losses", () => {
         currentUser: "main_user",
         users: {
             main_user: {
+                balance: 110,
                 gamesPlayed: 5,
                 wins: 5,
                 losses: 0,
@@ -61,6 +64,7 @@ test("getStats handles zero losses", () => {
     });
 
     assert.deepEqual(getStats(), {
+        balance: 110,
         wins: 5,
         losses: 0,
         gamesPlayed: 5,
@@ -73,6 +77,7 @@ test("resetStats zeros everything out and keeps the friend list", () => {
     resetStats();
 
     assert.deepEqual(getStats(), {
+        balance: 100,
         wins: 0,
         losses: 0,
         gamesPlayed: 0,
@@ -82,6 +87,7 @@ test("resetStats zeros everything out and keeps the friend list", () => {
 
     const saved = JSON.parse(globalThis.localStorage.getItem("pinntorp_state_v1"));
     assert.deepEqual(saved.users.main_user, {
+        balance: 100,
         gamesPlayed: 0,
         wins: 0,
         losses: 0,

@@ -1,5 +1,6 @@
 function createUserTemplate() {
     return {
+        balance: 100,
         gamesPlayed: 0,
         wins: 0,
         losses: 0,
@@ -19,13 +20,26 @@ export const state = {
     users: {} // all users
 }
 
+function normalizeUser(user = {}) {
+    return {
+        ...createUserTemplate(),
+        ...user,
+        balance: Number.isFinite(user.balance) ? user.balance : 100,
+        profit: Number.isFinite(user.profit) ? user.profit : 0,
+        friends: Array.isArray(user.friends) ? user.friends : [],
+        favoriteGames: Array.isArray(user.favoriteGames) ? user.favoriteGames : []
+    };
+}
+
 export function replaceState(nextState) {
     // if (!nextState) return;
 
     // load saved data if it exists
     if (nextState && nextState.users) {
         state.currentUser = nextState.currentUser || "main_user";
-        state.users = nextState.users;
+        state.users = Object.fromEntries(
+            Object.entries(nextState.users).map(([username, user]) => [username, normalizeUser(user)])
+        );
         return;
     }
 

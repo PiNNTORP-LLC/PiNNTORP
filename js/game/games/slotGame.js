@@ -32,14 +32,17 @@ function playSlotRound() {
     if (threeOutOfThreeMatch(firstNum, secNum, thirdNum)) {
         user.gamesPlayed += 1;
         user.wins += 1;
+        user.balance += firstNum * 5;
         user.profit += firstNum * 5;
     } else if (twoOutOfThreeMatch(firstNum, secNum, thirdNum)) {
         user.gamesPlayed += 1;
         user.wins += 1;
+        user.balance += 10;
         user.profit += 10; // double if only 2 match
     } else {
         user.gamesPlayed += 1;
         user.losses += 1;
+        user.balance -= 5;
         user.profit -= 5;
     }
 

@@ -9,9 +9,11 @@ function flipCoin(guess) {
     user.gamesPlayed += 1;
     if (won) {
         user.wins += 1;
+        user.balance += 10;
         user.profit += 10;
     } else {
         user.losses += 1;
+        user.balance -= 5;
         user.profit -= 5;
     }
 

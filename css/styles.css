@@ -38,6 +38,21 @@ p {
     flex-shrink: 0;
 }
 
+.header-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+}
+
+.balance-chip {
+    padding: 0.45rem 0.8rem;
+    border: 1px solid #d5d5d5;
+    border-radius: 999px;
+    background: #fff;
+    color: #333;
+    white-space: nowrap;
+}
+
 .tab-nav {
     display: flex;
     gap: 0.5rem;
@@ -197,6 +212,11 @@ li {
 
     .site-header {
         align-items: center;
+    }
+
+    .header-meta {
+        width: 100%;
+        justify-content: space-between;
     }
 
     .site-icon {
