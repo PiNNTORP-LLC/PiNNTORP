@@ -10,9 +10,9 @@
     <header class="site-header">
         <h1>PiNNTORP</h1>
         <nav class="tab-nav" aria-label="Primary">
-            <a class="tab-link is-active" href="index.html">Home</a>
+            <a class="tab-link" href="index.html">Home</a>
             <a class="tab-link" href="games.html">Games</a>
-            <a class="tab-link" href="friends.html">Friends</a>
+            <a class="tab-link is-active" href="friends.html">Friends</a>
             <a class="tab-link" href="profile.html">Profile</a>
         </nav>
     </header>
@@ -20,23 +20,19 @@
     <main class="layout">
         <div class="column">
             <section>
-                <h2>Home</h2>
-                <p>Welcome back to PiNNTORP.</p>
-                <p>Use the tabs above to jump between your games, friends list, and profile stats.</p>
-            </section>
-
-            <section>
-                <h2>Quick Links</h2>
-                <p>Open the Games tab to play Slots, Dice Roll, or Coin Flip.</p>
-                <p>Open Friends to manage your list and improve recommendations.</p>
+                <h2>Friends</h2>
+                <form id="friend-form">
+                    <input id="friend-name" type="text" placeholder="Friend name" required>
+                    <button type="submit">Add</button>
+                </form>
+                <ul id="friends-list"></ul>
             </section>
         </div>
 
         <div class="column">
             <section>
-                <h2>Overview</h2>
-                <p>Your recommendations are shown below in ranked order.</p>
-                <p>Select any recommendation card to jump straight to that game.</p>
+                <h2>How It Works</h2>
+                <p>Add friends by username to connect their favorite games with your recommendation feed.</p>
             </section>
         </div>
     </main>

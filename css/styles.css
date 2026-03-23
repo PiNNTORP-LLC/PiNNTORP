@@ -1,3 +1,7 @@
+html {
+    scroll-behavior: smooth;
+}
+
 * {
     box-sizing: border-box;
 }
@@ -8,6 +12,8 @@ body {
     padding: 1rem;
     line-height: 1.4;
     font-family: Arial, sans-serif;
+    background: #fafafa;
+    color: #222;
 }
 
 h1,
@@ -15,6 +21,39 @@ h2,
 h3,
 p {
     margin-top: 0;
+}
+
+.site-header {
+    margin-bottom: 1rem;
+}
+
+.tab-nav {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.75rem;
+}
+
+.tab-link {
+    padding: 0.5rem 0.9rem;
+    border: 1px solid #d5d5d5;
+    border-radius: 999px;
+    background: #fff;
+    color: #444;
+    text-decoration: none;
+}
+
+.tab-link:hover,
+.tab-link:focus-visible {
+    border-color: #aaa;
+    background: #f3f3f3;
+    outline: none;
+}
+
+.tab-link.is-active {
+    border-color: #222;
+    background: #222;
+    color: #fff;
 }
 
 .layout {
@@ -32,6 +71,11 @@ section {
     padding: 0.75rem;
     margin-bottom: 0.75rem;
     background: #fff;
+    border-radius: 10px;
+}
+
+.full-width-section {
+    width: 100%;
 }
 
 button {
@@ -74,12 +118,77 @@ li {
     padding: 0.9rem 0.5rem;
 }
 
+.rec-list {
+    min-height: 3rem;
+}
+
+.rec-track {
+    display: flex;
+    gap: 0.75rem;
+    overflow-x: auto;
+    padding-bottom: 0.35rem;
+    scroll-snap-type: x proximity;
+}
+
+.rec-card {
+    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.85rem 0.95rem;
+    border: 1px solid #d8d8d8;
+    border-radius: 8px;
+    background: #fff;
+    color: #222;
+    text-decoration: none;
+    scroll-snap-align: start;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.rec-card:hover,
+.rec-card:focus-visible {
+    background: #f8f8f8;
+    border-color: #999;
+    outline: none;
+}
+
+.rec-rank {
+    display: inline-flex;
+    align-self: flex-start;
+    color: #666;
+    font-size: 0.8rem;
+}
+
+.rec-title {
+    font-size: 1rem;
+}
+
+.rec-meta,
+.rec-friends,
+.rec-empty {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.game-panel:target {
+    border-color: #7e95d6;
+    box-shadow: 0 0 0 3px rgba(126, 149, 214, 0.18);
+}
+
 @media (max-width: 560px) {
     .layout {
         flex-direction: column;
     }
 
+    .tab-nav {
+        gap: 0.35rem;
+    }
+
     .slot-row {
         flex-direction: column;
+    }
+
+    .rec-card {
+        min-width: 82%;
     }
 }
