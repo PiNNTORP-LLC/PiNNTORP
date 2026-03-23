@@ -24,7 +24,18 @@ p {
 }
 
 .site-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
     margin-bottom: 1rem;
+    gap: 1rem;
+}
+
+.site-icon {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+    flex-shrink: 0;
 }
 
 .tab-nav {
@@ -182,6 +193,15 @@ li {
 
     .tab-nav {
         gap: 0.35rem;
+    }
+
+    .site-header {
+        align-items: center;
+    }
+
+    .site-icon {
+        width: 56px;
+        height: 56px;
     }
 
     .slot-row {
