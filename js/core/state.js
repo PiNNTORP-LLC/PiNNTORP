@@ -38,8 +38,8 @@ export function replaceState(nextState) {
     };
 
     if (state.users["dummy_alice"]) state.users["dummy_alice"].favoriteGames = ["Slots"];
-    if (state.users["dummy_bob"]) state.users["dummy_bob"].favoriteGames = ["Slots"];
-    if (state.users["dummy_charlie"]) state.users["dummy_charlie"].favoriteGames = ["Number Guesser"];
+    if (state.users["dummy_bob"]) state.users["dummy_bob"].favoriteGames = ["Slots", "Coin Flip"];
+    if (state.users["dummy_charlie"]) state.users["dummy_charlie"].favoriteGames = ["Number Guesser", "Coin Flip"];
 
     // state.friends = Array.isArray(nextState.friends) ? nextState.friends : [];
     // state.stats = {

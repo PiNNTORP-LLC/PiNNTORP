@@ -2,6 +2,9 @@ import { getStats, resetStats } from "./stats.js";
 
 export function renderStats() {
     const el = document.getElementById("stats-view");
+
+    if (!el) return;
+
     const s = getStats();
     el.innerHTML = `
     <p>Games: ${s.gamesPlayed}</p>
@@ -14,7 +17,11 @@ export function renderStats() {
 }
 
 export function initStatsView() {
-    document.getElementById("reset-stats").addEventListener("click", () => {
+    const resetButton = document.getElementById("reset-stats");
+
+    if (!resetButton) return;
+
+    resetButton.addEventListener("click", () => {
     resetStats();
     renderStats();
     });

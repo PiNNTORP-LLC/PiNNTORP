@@ -3,10 +3,13 @@ import { renderStats } from "../stats/statsView.js";
 
 const diceGameApi = getGameApi("dice");
 const slotGameApi = getGameApi("slots");
+const coinFlipApi = getGameApi("coinFlip");
 
 export function initGameView() {
     const controls = document.getElementById("game-controls");
     const result = document.getElementById("game-result");
+
+    if (!controls || !result) return;
 
     [1, 2, 3, 4, 5, 6].forEach((value) => {
         const button = document.createElement("button");
@@ -29,6 +32,8 @@ export function initSlotView() {
     const secNum = document.getElementById("second-num");
     const thirdNum = document.getElementById("third-num");
 
+    if (!button) return;
+
     button.addEventListener("click", () => {
         const slotNums = slotGameApi.play();
         firstNum.textContent = String(slotNums[0]);
@@ -37,4 +42,27 @@ export function initSlotView() {
 
         renderStats();
     })
+}
+
+export function initCoinFlipView() {
+   const headsButton = document.getElementById("heads");
+   const tailsButton = document.getElementById("tails");
+   const resultText = document.getElementById("coinResult");
+   const choiceText = document.getElementById("choice");
+
+   if (!headsButton) return;
+
+   headsButton.addEventListener("click", () => {
+        const result = coinFlipApi.play("Heads");
+        resultText.textContent = `Flipped: ${result}`;
+        choiceText.textContent = "Choose: Heads";
+        renderStats();
+   });
+
+   tailsButton.addEventListener("click", () => {
+        const result = coinFlipApi.play("Tails");
+        resultText.textContent = `Flipped: ${result}`;
+        choiceText.textContent = "Choose: Tails";
+        renderStats();
+   });
 }
