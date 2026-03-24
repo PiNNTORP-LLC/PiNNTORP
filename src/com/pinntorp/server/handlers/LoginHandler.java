@@ -37,6 +37,7 @@ public class LoginHandler implements HttpHandler
                 // Respond with HTTP error 405 Method Not Allowed if POST not used
                 exchange.sendResponseHeaders(405, -1);
                 Console.log("LoginHandler", "There was an attempt to use \"" + exchange.getRequestMethod() + "\" on the \"/login\" endpoint.");
+                exchange.close();
                 return;
             }
 
@@ -85,10 +86,16 @@ public class LoginHandler implements HttpHandler
             else
             {
                 // Unsupported action, respond with failure
+                exchange.getResponseHeaders().set("Content-Type", "application/json");
                 exchange.sendResponseHeaders(400, 0);
                 response.addProperty("error", "Unsupported action requested.");
                 response.addProperty("success", false);
+                OutputStreamWriter writer = new OutputStreamWriter(exchange.getResponseBody());
+                Json.GSON.toJson(response, writer);
+                writer.close();
+                exchange.close();
                 Console.log("LoginHandler", "Unsupported action \"" + action + "\" requested.");
+                return;
             }
 
             // Respond
@@ -97,6 +104,7 @@ public class LoginHandler implements HttpHandler
             OutputStreamWriter writer = new OutputStreamWriter(exchange.getResponseBody());
             Json.GSON.toJson(response, writer);
             writer.close();
+            exchange.close();
         }
         catch(Exception e)
         {

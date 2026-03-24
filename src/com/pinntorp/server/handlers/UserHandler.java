@@ -1,9 +1,8 @@
 package com.pinntorp.server.handlers;
 
-import com.pinntorp.server.Console;
-import com.pinntorp.server.Json;
-import com.pinntorp.server.User;
-import com.pinntorp.server.UserStore;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.pinntorp.server.*;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -14,106 +13,103 @@ import java.io.OutputStreamWriter;
 public class UserHandler implements HttpHandler
 {
     private final UserStore userStore;
+    private final SessionManager sessionManager;
 
-    public UserHandler(UserStore userStore)
+    public UserHandler(UserStore userStore, SessionManager sessionManager)
     {
         this.userStore = userStore;
-    }
-
-    public class UserRequest
-    {
-        String action;
-        String sessionID;
-        int playerID;
-        double amount;
-    }
-
-    public class UserBalanceResponse
-    {
-        UserBalanceResponse(double balance, boolean result)
-        {
-            this.balance = balance;
-            this.result = result;
-        }
-
-        double balance;
-        boolean result;
+        this.sessionManager = sessionManager;
     }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException
     {
-        // Check if the correct method was used
-        if(!exchange.getRequestMethod().equalsIgnoreCase("POST"))
-        {
-            // Respond with HTTP error 405 Method Not Allowed if POST not used
-            exchange.sendResponseHeaders(405, -1);
-            Console.log("LoginHandler", "There was an attempt to use \"" + exchange.getRequestMethod() + "\" on the \"/login\" endpoint.");
-            return;
-        }
-
         try
         {
-            // Parse request JSON
-            InputStreamReader reader = new InputStreamReader(exchange.getRequestBody());
-            UserRequest request = Json.GSON.fromJson(reader, UserRequest.class);
-            reader.close();
-
-            // Get sender
-            User sender = this.userStore.getUser(request.playerID);
-
-            // Verify session ID
-            if(!sender.verifySessionID(request.sessionID))
+            // Check if the correct method was used
+            if(!exchange.getRequestMethod().equalsIgnoreCase("POST"))
             {
-                // Session IDs don't match, send error response and return
-                exchange.sendResponseHeaders(401, -1);
-                Console.log("UserHandler", "Received request with mismatching session ID from player ID " + request.playerID + ".");
+                // Respond with HTTP error 405 Method Not Allowed if POST not used
+                exchange.sendResponseHeaders(405, -1);
+                Console.log("UserHandler", "There was an attempt to use \"" + exchange.getRequestMethod() + "\" on the /user endpoint.");
+                exchange.close();
                 return;
             }
 
-            // Check request action
-            if(request.action.equals("deposit"))
-            {
-                // Deposit funds, get updated balance
-                sender.deposit(request.amount);
+            // Parse request JSON
+            InputStreamReader reader = new InputStreamReader(exchange.getRequestBody());
+            JsonObject request = JsonParser.parseReader(reader).getAsJsonObject();
+            reader.close();
 
-                // Respond with balance
-                exchange.getResponseHeaders().set("Content-Type", "application/json");
-                exchange.sendResponseHeaders(200, 0);
-                OutputStreamWriter writer = new OutputStreamWriter(exchange.getResponseBody());
-                Json.GSON.toJson(new UserBalanceResponse(sender.getBalance(), true), writer);
-                writer.close();
-            }
-            else if(request.action.equals("withdraw"))
-            {
-                // Withdraw funds, get updated balance
-                boolean result = sender.withdraw(request.amount);
+            // Get the request parameters
+            String sessionID = request.get("sessionID").getAsString();
+            String action = request.get("action").getAsString();
 
-                // Respond with balance and result
-                exchange.getResponseHeaders().set("Content-Type", "application/json");
-                exchange.sendResponseHeaders(200, 0);
-                OutputStreamWriter writer = new OutputStreamWriter(exchange.getResponseBody());
-                Json.GSON.toJson(new UserBalanceResponse(sender.getBalance(), result), writer);
-                writer.close();
-            }
-            else if(request.action.equals("balance"))
+            // Create the response
+            JsonObject response = new JsonObject();
+
+            // Verify and get current session
+            Session session = this.sessionManager.verifySession(sessionID);
+            if(session == null)
             {
-                // Respond with balance
+                response.addProperty("error", "Invalid session ID");
+                response.addProperty("success", false);
                 exchange.getResponseHeaders().set("Content-Type", "application/json");
-                exchange.sendResponseHeaders(200, 0);
+                exchange.sendResponseHeaders(401, 0);
                 OutputStreamWriter writer = new OutputStreamWriter(exchange.getResponseBody());
-                Json.GSON.toJson(new UserBalanceResponse(sender.getBalance(), true), writer);
+                Json.GSON.toJson(response, writer);
                 writer.close();
+                exchange.close();
+                return;
+            }
+
+            // Check and perform requested action
+            if(action.equals("deposit"))
+            {
+                // Add specified amount of funds from user balance
+                double amount = request.get("amount").getAsDouble();
+                User user = this.userStore.getUser(session.getPlayerID());
+                response.addProperty("success", user.withdraw(amount));
+                response.addProperty("balance", user.getBalance());
+            }
+            else if(action.equals("withdraw"))
+            {
+                // Remove specified amount of funds from user balance
+                double amount = request.get("amount").getAsDouble();
+                User user = this.userStore.getUser(session.getPlayerID());
+                user.deposit(amount);
+                response.addProperty("balance", user.getBalance());
+                response.addProperty("success", true);
+            }
+            else if(action.equals("getBalance"))
+            {
+                // Get user balance
+                User user = this.userStore.getUser(session.getPlayerID());
+                response.addProperty("balance", user.getBalance());
+                response.addProperty("success", true);
             }
             else
             {
-                // Respond with unsupported action
-                exchange.sendResponseHeaders(400, -1);
-                Console.log("UserHandler", "Unsupported action \"" + request.action + "\" requested.");
+                // Unsupported action, respond wth failure
+                exchange.getResponseHeaders().set("Content-Type", "application/json");
+                exchange.sendResponseHeaders(400, 0);
+                response.addProperty("error", "Unsupported action requested");
+                response.addProperty("success", false);
+                OutputStreamWriter writer = new OutputStreamWriter(exchange.getResponseBody());
+                Json.GSON.toJson(response, writer);
+                writer.close();
+                exchange.close();
+                Console.log("UserHandler", "Unsupported action \"" + action + "\" requested.");
+                return;
             }
 
-            // Renew user's session expiry
-            sender.extendSession();
+            // Send response
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, 0);
+            OutputStreamWriter writer = new OutputStreamWriter(exchange.getResponseBody());
+            Json.GSON.toJson(response, writer);
+            writer.close();
+            exchange.close();
         }
         catch(Exception e)
         {

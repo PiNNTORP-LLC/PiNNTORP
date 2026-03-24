@@ -1,5 +1,6 @@
 package com.pinntorp.server.handlers;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.pinntorp.server.*;
@@ -14,104 +15,107 @@ import java.util.List;
 
 public class LobbyHandler implements HttpHandler
 {
-    private final UserStore userStore;
+    private final SessionManager sessionManager;
     private final LobbyManager lobbyManager;
-    private final SecureRandom random;
 
-    public LobbyHandler(UserStore userStore, LobbyManager lobbyManager)
+    public LobbyHandler(SessionManager sessionManager, LobbyManager lobbyManager)
     {
-        this.userStore = userStore;
+        this.sessionManager = sessionManager;
         this.lobbyManager = lobbyManager;
-        this.random = new SecureRandom();
     }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException
     {
-        // Check if the correct method was used
-        if(!exchange.getRequestMethod().equalsIgnoreCase("POST"))
-        {
-            // Respond with HTTP error 405 Method Not Allowed if POST not used
-            exchange.sendResponseHeaders(405, -1);
-            Console.log("LobbyHandler", "There was an attempt to use \"" + exchange.getRequestMethod() + "\" on the \"/lobby\" endpoint.");
-            return;
-        }
-
         try
         {
+            // Check if the correct method was used
+            if(!exchange.getRequestMethod().equalsIgnoreCase("POST"))
+            {
+                // Respond with HTTP error 405 Method Not Allowed if POST not used
+                exchange.sendResponseHeaders(405, -1);
+                Console.log("LobbyHandler", "There was an attempt to use \"" + exchange.getRequestMethod() + "\" on the /lobby endpoint.");
+                exchange.close();
+                return;
+            }
+
             // Parse request JSON
             InputStreamReader reader = new InputStreamReader(exchange.getRequestBody());
             JsonObject request = JsonParser.parseReader(reader).getAsJsonObject();
             reader.close();
 
-            // Get session ID and action
+            // Get the request parameters
             String sessionID = request.get("sessionID").getAsString();
             String action = request.get("action").getAsString();
 
-            // Verify session ID
-            if(sender.verifySessionID(request.sessionID))
+            // Create the response
+            JsonObject response = new JsonObject();
+
+            // Verify and get current session
+            Session session = this.sessionManager.verifySession(sessionID);
+            if(session == null)
             {
-                if(request.action.equals("create"))
-                {
-                    // Create lobby
-                    Lobby newLobby = this.lobbyManager.createLobby(request.lobby);
+                response.addProperty("error", "Invalid session ID");
+                response.addProperty("success", false);
+                exchange.getResponseHeaders().set("Content-Type", "application/json");
+                exchange.sendResponseHeaders(401, 0);
+                OutputStreamWriter writer = new OutputStreamWriter(exchange.getResponseBody());
+                Json.GSON.toJson(response, writer);
+                writer.close();
+                exchange.close();
+                return;
+            }
 
-                    // Respond with lobby ID
-                    exchange.getResponseHeaders().set("Content-Type", "application/json");
-                    exchange.sendResponseHeaders(200, 0);
-                    OutputStreamWriter writer = new OutputStreamWriter(exchange.getResponseBody());
-                    Json.GSON.toJson(new LobbyIDResponse(newLobby.getID()), writer);
-                    writer.close();
-
-                    // Log
-                    Console.log("LobbyHandler", "Lobby ID " + newLobby.getID() + " created by player ID " + request.playerID + ".");
-                }
-                else if(request.action.equals("list"))
-                {
-                    // Get list of lobbies
-                    List<JsonObject> lobbyList = this.lobbyManager.listLobbies();
-
-                    // Respond with lobby list
-                    exchange.getResponseHeaders().set("Content-Type", "application/json");
-                    exchange.sendResponseHeaders(200, 0);
-                    OutputStreamWriter writer = new OutputStreamWriter(exchange.getResponseBody());
-                    Json.GSON.toJson(new LobbyListResponse(lobbyList), writer);
-                    writer.close();
-                }
-                else if(request.action.equals("join"))
-                {
-                    // Add joining player to lobby
-                    this.lobbyManager.joinLobby(sender.getPlayerID(), request.lobby);
-
-                    // Respond with success
-                    exchange.sendResponseHeaders(200, -1);
-                    Console.log("LobbyHandler", "Player ID " + sender.getPlayerID() + " joined lobby ID " + joining.getID() + ".");
-                }
-                else if(request.action.equals("leave"))
-                {
-                    // Remove leaving player from lobby
-                    this.lobbyManager.leaveLobby(request.playerID, request.lobby);
-
-                    // Respond with success
-                    exchange.sendResponseHeaders(200, -1);
-                    Console.log("LobbyHandler", "Player ID " + sender.getPlayerID() + " left lobby ID " + leaving.getID() + ".");
-                }
-                else
-                {
-                    exchange.sendResponseHeaders(400, -1);
-                    Console.log("LobbyHandler", "Unsupported action \"" + request.action + "\" requested.");
-                }
-
-                // Renew user's session expiry
-                sender.extendSession();
+            // Check and perform requested action
+            if(action.equals("create"))
+            {
+                // Create lobby of specified name and return lobby ID
+                String lobbyName = request.get("lobbyName").getAsString();
+                String lobbyID = this.lobbyManager.createLobby(lobbyName);
+                response.addProperty("lobbyID", lobbyID);
+                response.addProperty("success", true);
+            }
+            else if(action.equals("list"))
+            {
+                // List all lobbies
+                response.add("lobbyList", this.lobbyManager.listLobbies());
+                response.addProperty("success", true);
+            }
+            else if(action.equals("join"))
+            {
+                // Join lobby by lobby ID
+                String lobbyID = request.get("lobbyID").getAsString();
+                response.addProperty("success", this.lobbyManager.joinLobby(session, lobbyID));
+            }
+            else if(action.equals("leave"))
+            {
+                // Leave currently joined lobby
+                response.addProperty("success", this.lobbyManager.leaveLobby(session));
             }
             else
             {
-                exchange.sendResponseHeaders(401, -1);
-                Console.log("LobbyHandler", "Received invalid session ID while attempting to " + request.action + " lobby.");
+                // Unsupported action, respond with failure
+                exchange.getResponseHeaders().set("Content-Type", "application/json");
+                exchange.sendResponseHeaders(400, 0);
+                response.addProperty("error", "Unsupported action requested.");
+                response.addProperty("success", false);
+                OutputStreamWriter writer = new OutputStreamWriter(exchange.getResponseBody());
+                Json.GSON.toJson(response, writer);
+                writer.close();
+                exchange.close();
+                Console.log("LobbyHandler", "Unsupported action \"" + action + "\" requested.");
+                return;
             }
+
+            // Response
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, 0);
+            OutputStreamWriter writer = new OutputStreamWriter(exchange.getResponseBody());
+            Json.GSON.toJson(response, writer);
+            writer.close();
+            exchange.close();
         }
-        catch (Exception e)
+        catch(Exception e)
         {
             Console.log("LobbyHandler", "Encountered " + e.getClass().getName() + " while attempting to handle /lobby request.\n" + e);
         }
