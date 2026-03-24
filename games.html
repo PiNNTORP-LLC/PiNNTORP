@@ -6,6 +6,7 @@
     <title>PiNNTORP</title>
     <link rel="icon" type="image/png" href="icon.png">
     <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 </head>
 <body>
     <header class="site-header">
@@ -28,35 +29,62 @@
         <div class="column">
             <section>
                 <h2>Games</h2>
-                <p>Pick any game below to play. Recommendation cards can also jump you straight here.</p>
+                <p>Focus on one game at a time. Pick a game below to make it the active table.</p>
+            </section>
+
+            <section class="game-switcher-section">
+                <h2>Choose Your Game</h2>
+                <nav class="game-switcher" aria-label="Game switcher">
+                    <a class="game-tab-link is-active" href="#slots-game" data-game-target="slots-game">Slots</a>
+                    <a class="game-tab-link" href="#dice-game" data-game-target="dice-game">Dice Roll</a>
+                    <a class="game-tab-link" href="#coin-flip-game" data-game-target="coin-flip-game">Coin Flip</a>
+                </nav>
             </section>
         </div>
 
         <div class="column">
             <section id="slots-game" class="slots game-panel">
                 <h2>Slots</h2>
-                <div class="slot-row">
-                    <div class="slot-nums">
-                        <h3 id="first-num">One</h3> 
-                    </div>
-                    <div class="slot-nums">
-                        <h3 id="second-num">Two</h3>
-                    </div>
-                    <div class="slot-nums">
-                        <h3 id="third-num">Three</h3>
+                <div class="slot-machine">
+                    <div class="slot-row">
+                        <div class="slot-window">
+                            <div class="slot-reel" id="reel-1">
+                                <div class="slot-symbol winner">7</div>
+                            </div>
+                        </div>
+                        <div class="slot-window">
+                            <div class="slot-reel" id="reel-2">
+                                <div class="slot-symbol winner">7</div>
+                            </div>
+                        </div>
+                        <div class="slot-window">
+                            <div class="slot-reel" id="reel-3">
+                                <div class="slot-symbol winner">7</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <button id="slot-roll" type="button">Roll</button>
+                <button id="slot-roll" type="button" class="spin-btn">SPIN!</button>
             </section>
 
-            <section id="dice-game" class="game-panel">
+            <section id="dice-game" class="game-panel hidden">
                 <h2>Dice Roll</h2>
-                <p>Pick a number 1-6.</p>
-                <div id="game-controls"></div>
-                <p id="game-result">No games played yet.</p>
+                <p class="dice-copy">Pick a number and roll the die!</p>
+                <div class="dice-container">
+                    <div id="dice" class="dice">
+                        <div class="dice-face face-1">1</div>
+                        <div class="dice-face face-2">2</div>
+                        <div class="dice-face face-3">3</div>
+                        <div class="dice-face face-4">4</div>
+                        <div class="dice-face face-5">5</div>
+                        <div class="dice-face face-6">6</div>
+                    </div>
+                </div>
+                <div id="game-controls" class="dice-controls"></div>
+                <p id="game-result" class="dice-result">No games played yet.</p>
             </section>
 
-            <section id="coin-flip-game" class="game-panel">
+            <section id="coin-flip-game" class="game-panel hidden">
                 <h2>Coin Flip</h2>
                 <p>Heads or Tails?</p>
                 <p id="coinResult">No games played yet</p>

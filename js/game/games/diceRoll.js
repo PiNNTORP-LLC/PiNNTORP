@@ -1,8 +1,35 @@
 import { state } from "../../core/state.js";
 import { saveState } from "../../core/storage.js";
+import { getAuthHeaders, hasBackendSession, requestJson } from "../../core/network.js";
 
 // for now using the assumption that the user makes a $5 bet
-function rollDice(guess) {
+async function rollDice(guess) {
+    // Prefer the backend result when the user has a session
+    if (hasBackendSession()) {
+        try {
+            const user = state.users[state.currentUser];
+            const round = await requestJson("/api/dice", {
+                method: "POST",
+                headers: getAuthHeaders({ "Content-Type": "application/json" }),
+                body: JSON.stringify({ guess: Number(guess) })
+            });
+
+            if (user && round.stats) {
+                user.gamesPlayed = round.stats.gamesPlayed;
+                user.wins = round.stats.wins;
+                user.losses = round.stats.losses;
+                user.profit = round.stats.profit;
+                user.balance = round.stats.balance;
+            }
+
+            saveState(state);
+            return { guess: round.guess, roll: round.roll, won: round.won };
+        } catch (error) {
+            console.warn("Falling back to local dice game:", error);
+        }
+    }
+
+    // Fall back to the local round logic when offline
     const roll = Math.floor(Math.random() * 6) + 1;
     const won = Number(guess) === roll;
     const user = state.users[state.currentUser];

@@ -36,43 +36,48 @@ public class WebSocket
      */
     public WebSocket(Socket socket) throws IOException, NoSuchAlgorithmException
     {
+        this(socket, null);
+    }
+
+    public WebSocket(Socket socket, java.util.Map<String, String> headers) throws IOException, NoSuchAlgorithmException
+    {
+        this.socket = socket;
+
         // Get input and output streams for socket
         this.output = socket.getOutputStream();
         this.input = socket.getInputStream();
 
-        // Read HTTP request
-        String request = new String(this.input.readAllBytes(), StandardCharsets.UTF_8);
+        String keyString = headers != null ? headers.get("Sec-WebSocket-Key") : null;
+        boolean hasKey = keyString != null && !keyString.isEmpty();
 
-        // Strip request "\r\n\r\n" tail
-        request = request.substring(0, request.length()-2);
-
-        // Split request into headers
-        String[] headers = request.split("\\r\\n");
-
-        // Check that the websocket upgrade request is valid, and get the key
-        boolean isValidRequest = false;
-        String keyString = "";
-        if(headers[0].startsWith("GET"))
+        if(!hasKey)
         {
-            // Iterate through the headers of the request
-            for (String header : headers)
+            // Read HTTP request
+            String request = new String(this.input.readAllBytes(), StandardCharsets.UTF_8);
+            
+            // Strip request "\r\n\r\n" tail
+            request = request.substring(0, request.length()-2);
+
+            // Split request into headers
+            String[] rawHeaders = request.split("\\r\\n");
+            if(rawHeaders[0].startsWith("GET"))
             {
-                // Check that the "Upgrade: websocket" header is present
-                if (header.equals("Upgrade: websocket"))
+                // Iterate through the headers of the request
+                for (String header : rawHeaders)
                 {
-                    isValidRequest = true;
-                }
-                // Get the key from the "Sec-WebSocket-Key" header
-                else if (header.startsWith("Sec-WebSocket-Key: "))
-                {
-                    keyString = header.substring(22);
-                    isValidRequest = true;
+                    // Get the key from the "Sec-WebSocket-Key" header
+                    if (header.startsWith("Sec-WebSocket-Key: "))
+                    {
+                        keyString = header.substring(22);
+                        hasKey = true;
+                        break;
+                    }
                 }
             }
         }
 
         // If request valid, generate and send handshake response
-        if(isValidRequest)
+        if(hasKey)
         {
             // MDN magic for turning "Sec-WebSocket-Key" into "Sec-WebSocket-Accept"
             String base64Accept = Base64.getEncoder().encodeToString(MessageDigest.getInstance("SHA-1").digest((keyString + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11").getBytes(StandardCharsets.UTF_8)));

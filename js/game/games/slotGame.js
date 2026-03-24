@@ -1,5 +1,6 @@
 import { state } from "../../core/state.js";
 import { saveState } from "../../core/storage.js";
+import { getAuthHeaders, hasBackendSession, requestJson } from "../../core/network.js";
 
 // helper functions for checking values of slot numbers
 function twoOutOfThreeMatch(num1, num2, num3) {
@@ -19,7 +20,32 @@ function threeOutOfThreeMatch(num1, num2, num3) {
 }
 
 // for now using the assumption that the user makes a $5 bet
-function playSlotRound() {
+async function playSlotRound() {
+    // Prefer the backend result when the user has a session
+    if (hasBackendSession()) {
+        try {
+            const user = state.users[state.currentUser];
+            const round = await requestJson("/api/gamble", {
+                method: "POST",
+                headers: getAuthHeaders({ "Content-Type": "application/json" })
+            });
+
+            if (user && round.stats) {
+                user.gamesPlayed = round.stats.gamesPlayed;
+                user.wins = round.stats.wins;
+                user.losses = round.stats.losses;
+                user.profit = round.stats.profit;
+                user.balance = round.stats.balance;
+            }
+
+            saveState(state);
+            return round.nums;
+        } catch (error) {
+            console.warn("Falling back to local slots game:", error);
+        }
+    }
+
+    // Fall back to the local round logic when offline
     const user = state.users[state.currentUser];
 
     // randomise the 3 slot numbers

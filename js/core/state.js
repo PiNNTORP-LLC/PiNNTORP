@@ -18,10 +18,10 @@ function createUserTemplate() {
 export const state = {
     currentUser: "main_user",
     users: {} // all users
-}
+};
 
 function normalizeUser(user = {}) {
-    return {
+    const nextUser = {
         ...createUserTemplate(),
         ...user,
         balance: Number.isFinite(user.balance) ? user.balance : 100,
@@ -29,6 +29,7 @@ function normalizeUser(user = {}) {
         friends: Array.isArray(user.friends) ? user.friends : [],
         favoriteGames: Array.isArray(user.favoriteGames) ? user.favoriteGames : []
     };
+    return nextUser;
 }
 
 export function replaceState(nextState) {
@@ -37,9 +38,10 @@ export function replaceState(nextState) {
     // load saved data if it exists
     if (nextState && nextState.users) {
         state.currentUser = nextState.currentUser || "main_user";
-        state.users = Object.fromEntries(
-            Object.entries(nextState.users).map(([username, user]) => [username, normalizeUser(user)])
-        );
+        state.users = {};
+        for (const username of Object.keys(nextState.users)) {
+            state.users[username] = normalizeUser(nextState.users[username]);
+        }
         return;
     }
 
@@ -61,4 +63,41 @@ export function replaceState(nextState) {
     //     losses: Number(nextState.stats?.losses) || 0,
     //     gamesPlayed: Number(nextState.stats?.gamesPlayed) || 0
     // };
+}
+
+export async function fetchRemoteState() {
+    // Load the network helpers lazily so local only pages still work
+    const { hasBackendSession, getAuthHeaders, requestJson } = await import("./network.js");
+
+    if (!hasBackendSession()) {
+        return false;
+    }
+
+    try {
+        // Read the current username from the stored JWT
+        const token = localStorage.getItem("jwt");
+        const bits = token.split(".");
+        const payload = JSON.parse(atob(bits[1]));
+        const username = payload.sub || state.currentUser;
+
+        // Fetch the latest server side stats for the active user
+        const data = await requestJson("/api/state", {
+            method: "GET",
+            headers: getAuthHeaders()
+        });
+
+        // Merge the remote stats into the local state shape
+        state.currentUser = username;
+        const current = state.users[username] || {};
+        current.balance = data.balance ?? 100 + (data.profit ?? 0);
+        current.gamesPlayed = data.gamesPlayed ?? 0;
+        current.wins = data.wins ?? 0;
+        current.losses = data.losses ?? 0;
+        current.profit = data.profit ?? 0;
+        state.users[username] = normalizeUser(current);
+        return true;
+    } catch (error) {
+        console.warn("Backend state sync unavailable:", error);
+        return false;
+    }
 }
