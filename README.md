@@ -14,6 +14,7 @@
 
 - [Overview](#overview)
 - [Features](#features)
+- [Screenshots](#screenshots)
 - [Architecture](#architecture)
 - [Getting Started](#getting-started)
 - [Running Tests](#running-tests)
@@ -36,12 +37,46 @@ PiNNTORP is a web-based gambling platform. Users can play 3 different gambling g
 |---------|--------|
 | Dice Roll game | Implemented |
 | Slot Machine game | Implemented |
+| Coin Flip game | Implemented |
 | Friends list (add/remove) | Implemented |
 | Player statistics & win/loss ratio | Implemented |
+| Player balance | Implemented |
 | Game recommendation algorithm | Implemented |
 | Account deletion | In Progress (Iteration 3) |
 
 ---
+## Screenshots
+
+
+### Home Page
+
+<p align="center">
+  <img src="resources/images/iteration2_1.png" alt="Home page" width="700">
+</p>
+
+### Games Tab
+
+<p align="center">
+  <img src="resources/images/iteration2_2.png" alt="Games tab slots initial" width="350">
+  <img src="resources/images/iteration2_3.png" alt="Games tab dice initial" width="350">
+  <img src="resources/images/iteration2_4.png" alt="Games tab coin flip initial" width="350">
+  <img src="resources/images/iteration2_8.png" alt="Games tab slots active" width="350">
+</p>
+
+### Friends Tab
+
+<p align="center">
+  <img src="resources/images/iteration2_5.png" alt="Friends tab initial" width="350">
+  <img src="resources/images/iteration2_7.png" alt="Friends tab with friends" width="350">
+</p>
+
+### Profile Tab
+
+<p align="center">
+  <img src="resources/images/iteration2_6.png" alt="Profile tab initial" width="350">
+</p>
+
+
 
 ## Architecture
 
