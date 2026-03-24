@@ -34,6 +34,8 @@ public class SessionManager
     // Checks to see if a session with the provided ID exists, and if it's expired
     public Session verifySession(String sessionID)
     {
+        Session session = this.sessions.get(sessionID);
+        if(session == null) return null;
         return this.sessions.get(sessionID).verify();
     }
 

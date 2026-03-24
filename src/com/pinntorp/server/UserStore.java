@@ -137,9 +137,44 @@ public class UserStore
 
     public boolean acceptFriendRequest(int playerID, int friendID)
     {
-        User sender = this.users.get(playerID);
-        User receiver = this.users.get(friendID);
-        sender.acceptFriendRequest(friendID);
-        receiver.cancelFriendRequest(playerID);
+        User player = this.users.get(playerID);
+        User newFriend = this.users.get(friendID);
+        if(player.acceptFriendRequest(friendID))
+        {
+            newFriend.cancelFriendRequest(playerID);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean declineFriendRequest(int playerID, int friendID)
+    {
+        User player = this.users.get(playerID);
+        User pendingFriend = this.users.get(friendID);
+        if(player.declineFriendRequest(friendID))
+        {
+            pendingFriend.cancelFriendRequest(playerID);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean cancelFriendRequest(int playerID, int friendID)
+    {
+        User player = this.users.get(playerID);
+        User pendingFriend = this.users.get(friendID);
+        if(player.cancelFriendRequest(friendID))
+        {
+            pendingFriend.declineFriendRequest(playerID);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean removeFriend(int playerID, int friendID)
+    {
+        User player = this.users.get(playerID);
+        User oldFriend = this.users.get(friendID);
+        return player.removeFriend(friendID) && oldFriend.removeFriend(playerID);
     }
 }
