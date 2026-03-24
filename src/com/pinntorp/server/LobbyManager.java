@@ -5,8 +5,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 import java.security.SecureRandom;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class LobbyManager

@@ -6,11 +6,9 @@ import com.pinntorp.server.*;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.security.SecureRandom;
 
 /**
  * This class implements the "/login" HTTP API endpoint for authenticating users

@@ -1,6 +1,5 @@
 package com.pinntorp.server.handlers;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.pinntorp.server.*;
@@ -10,8 +9,6 @@ import com.sun.net.httpserver.HttpHandler;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.security.SecureRandom;
-import java.util.List;
 
 public class LobbyHandler implements HttpHandler
 {
