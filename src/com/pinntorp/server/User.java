@@ -5,11 +5,8 @@ import java.util.*;
 
 public class User
 {
-    private int playerID;
     private String username;
-    private String passwordHash;
-    private String sessionID;
-    private long sessionExpiry;
+    private String password;
     private double balance;
     private Set<Integer> friends;
     private Set<Integer> receivedFriendRequests;
@@ -19,20 +16,14 @@ public class User
      * Creates a new User with the provided username and password hash.
      * This constructor sets the rest of user values to defaults, so
      * it's intended for creating newly registered users.
-     * @param id            the users' player ID
      * @param username      the users' username
-     * @param passwordHash  the users' password hashed and encoded in base64
+     * @param password      the users' password
      */
-    public User(int id, String username, String passwordHash)
+    public User(String username, String password)
     {
-        // Set player ID
-        this.playerID = id;
-
         // Set username and password, and initialize the rest to empty.
         this.username = username;
-        this.passwordHash = passwordHash;
-        this.sessionID = "";
-        this.sessionExpiry = 0;
+        this.password = password;
         this.balance = 0.0;
         this.friends = new HashSet<>();
         this.receivedFriendRequests = new HashSet<>();
@@ -42,34 +33,21 @@ public class User
     /**
      * Creates a new User with the provided parameters.
      * This constructor is intended for loading existing users at startup
-     * @param playerID
-     * @param username
-     * @param passwordHash
+     * @param username      the user's username
+     * @param password      the user's password
      * @param balance
      * @param friends
      * @param receivedFriendRequests
      * @param sentFriendRequests
      */
-    public User(int playerID, String username, String passwordHash, double balance, Set<Integer> friends, Set<Integer> receivedFriendRequests, Set<Integer> sentFriendRequests)
+    public User(String username, String password, double balance, Set<Integer> friends, Set<Integer> receivedFriendRequests, Set<Integer> sentFriendRequests)
     {
-        this.playerID = playerID;
         this.username = username;
-        this.passwordHash = passwordHash;
-        this.sessionID = "";
-        this.sessionExpiry = 0;
+        this.password = password;
         this.balance = balance;
         this.friends = friends;
         this.receivedFriendRequests = receivedFriendRequests;
         this.sentFriendRequests = sentFriendRequests;
-    }
-
-    /**
-     * Returns the player ID.
-     * @return the player's ID
-     */
-    public int getPlayerID()
-    {
-        return this.playerID;
     }
 
     /**
@@ -91,6 +69,30 @@ public class User
     }
 
     /**
+     * Adds the specified amount to the user's balance.
+     * @param amount the amount to add
+     */
+    public void deposit(double amount)
+    {
+        this.balance += amount;
+    }
+
+    /**
+     * Withdraws the specified amount from the user's balance, if there is sufficient funds.
+     * @param amount the amount to withdraw
+     * @return whether the transaction was successful
+     */
+    public boolean withdraw(double amount)
+    {
+        if(this.balance >= amount)
+        {
+            this.balance -= amount;
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Returns the username.
      * @return the user's username
      */
@@ -103,9 +105,9 @@ public class User
      * Returns the password hash.
      * @return the user's password hash
      */
-    public String getPasswordHash()
+    public String getPassword()
     {
-        return this.passwordHash;
+        return this.password;
     }
 
     /**
@@ -161,67 +163,23 @@ public class User
         }
     }
 
-    public void acceptFriendRequest(int friendID)
+    public boolean acceptFriendRequest(int friendID)
     {
         if(this.receivedFriendRequests.remove(friendID))
         {
             this.addFriend(friendID);
+            return true;
         }
+        return false;
     }
 
-    public void declineFriendRequest(int friendID)
+    public boolean declineFriendRequest(int friendID)
     {
-        this.receivedFriendRequests.remove(friendID);
+        return this.receivedFriendRequests.remove(friendID);
     }
 
     public void cancelFriendRequest(int friendID)
     {
         this.sentFriendRequests.remove(friendID);
-    }
-
-    /**
-     * Returns the session ID.
-     * @return the user's session ID
-     */
-    public String getSessionID()
-    {
-        return this.sessionID;
-    }
-
-    /**
-     * Update session expiry to 30 minutes after current time.
-     */
-    public void extendSession()
-    {
-        this.sessionExpiry = System.currentTimeMillis() + 30 * 60 * 1000;
-    }
-
-    /**
-     * Check whether the session has expired.
-     * @return true if the session expired, false if not
-     */
-    public boolean isSessionExpired()
-    {
-        return System.currentTimeMillis() > this.sessionExpiry;
-    }
-
-    public boolean verifySessionID(String sessionID)
-    {
-        // Check to make sure the session is not expired and that its ID matches the request ID
-        return !(isSessionExpired() || !this.sessionID.equals(sessionID));
-    }
-
-    public String generateSessionID(SecureRandom random)
-    {
-        byte[] bytes = new byte[32];
-        random.nextBytes(bytes);
-        this.sessionID = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
-        this.sessionExpiry = System.currentTimeMillis() + 30 * 60 * 1000;
-        return this.sessionID;
-    }
-
-    public void invalidateSessionID()
-    {
-        this.sessionExpiry = 0;
     }
 }

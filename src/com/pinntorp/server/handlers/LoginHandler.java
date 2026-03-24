@@ -66,22 +66,28 @@ public class LoginHandler implements HttpHandler
             {
                 // Get user and start session
                 int playerID = this.userStore.login(username, password);
-                String sessionID = this.sessionManager.startSession(playerID);
-                response.addProperty("sessionID", sessionID);
-                response.addProperty("success", true);
+                if(playerID != -1)
+                {
+                    // User logged in successfully, start session and add session ID to response
+                    String sessionID = this.sessionManager.startSession(playerID);
+                    response.addProperty("sessionID", sessionID);
+                }
+                // Add success to response
+                response.addProperty("success", playerID != -1);
             }
             else if(action.equals("logout"))
             {
                 // Get and end session
                 String sessionID = request.get("sessionID").getAsString();
                 Session session = this.sessionManager.endSession(sessionID);
-                response.addProperty("success", true);
+                response.addProperty("success", session != null);
             }
             else
             {
                 // Unsupported action, respond with failure
                 exchange.sendResponseHeaders(400, 0);
                 response.addProperty("error", "Unsupported action requested.");
+                response.addProperty("success", false);
                 Console.log("LoginHandler", "Unsupported action \"" + action + "\" requested.");
             }
 
