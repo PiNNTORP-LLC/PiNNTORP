@@ -1,14 +1,13 @@
-import { state } from "../core/state.js";
-import { saveState } from "../core/storage.js";
+import { coinFlipApi } from "./games/coinFlip.js";
+import { diceRollApi } from "./games/diceRoll.js";
+import { slotGameApi } from "./games/slotGame.js";
 
-export function playRound(guess) {
-    const roll = Math.floor(Math.random() * 3) + 1;
-    const won = Number(guess) === roll;
+const gameApis = {
+    dice: diceRollApi,
+    slots: slotGameApi,
+    coinFlip: coinFlipApi
+};
 
-    state.stats.gamesPlayed += 1;
-    if (won) state.stats.wins += 1;
-    else state.stats.losses += 1;
-
-    saveState(state);
-    return { guess: Number(guess), roll, won };
+export function getGameApi(gameName) {
+    return gameApis[gameName];
 }

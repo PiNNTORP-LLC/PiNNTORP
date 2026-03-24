@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PiNNTORP</title>
+    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <header class="site-header">
+        <div>
+            <h1>PiNNTORP</h1>
+            <nav class="tab-nav" aria-label="Primary">
+                <a class="tab-link" href="index.html">Home</a>
+                <a class="tab-link is-active" href="games.html">Games</a>
+                <a class="tab-link" href="friends.html">Friends</a>
+                <a class="tab-link" href="profile.html">Profile</a>
+            </nav>
+        </div>
+        <div class="header-meta">
+            <div class="balance-chip">Balance: <span id="balance-value">$0</span></div>
+            <img class="site-icon" src="resources/images/icon.png" alt="PiNNTORP icon">
+        </div>
+    </header>
+
+    <main class="layout">
+        <div class="column">
+            <section>
+                <h2>Games</h2>
+                <p>Focus on one game at a time. Pick a game below to make it the active table.</p>
+            </section>
+
+            <section class="game-switcher-section">
+                <h2>Choose Your Game</h2>
+                <nav class="game-switcher" aria-label="Game switcher">
+                    <a class="game-tab-link is-active" href="#slots-game" data-game-target="slots-game">Slots</a>
+                    <a class="game-tab-link" href="#dice-game" data-game-target="dice-game">Dice Roll</a>
+                    <a class="game-tab-link" href="#coin-flip-game" data-game-target="coin-flip-game">Coin Flip</a>
+                </nav>
+            </section>
+        </div>
+
+        <div class="column">
+            <section id="slots-game" class="slots game-panel">
+                <h2>Slots</h2>
+                <div class="slot-machine">
+                    <div class="slot-row">
+                        <div class="slot-window">
+                            <div class="slot-reel" id="reel-1">
+                                <div class="slot-symbol winner">7</div>
+                            </div>
+                        </div>
+                        <div class="slot-window">
+                            <div class="slot-reel" id="reel-2">
+                                <div class="slot-symbol winner">7</div>
+                            </div>
+                        </div>
+                        <div class="slot-window">
+                            <div class="slot-reel" id="reel-3">
+                                <div class="slot-symbol winner">7</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button id="slot-roll" type="button" class="spin-btn">SPIN!</button>
+            </section>
+
+            <section id="dice-game" class="game-panel hidden">
+                <h2>Dice Roll</h2>
+                <p class="dice-copy">Pick a number and roll the die!</p>
+                <div class="dice-container">
+                    <div id="dice" class="dice">
+                        <div class="dice-face face-1">1</div>
+                        <div class="dice-face face-2">2</div>
+                        <div class="dice-face face-3">3</div>
+                        <div class="dice-face face-4">4</div>
+                        <div class="dice-face face-5">5</div>
+                        <div class="dice-face face-6">6</div>
+                    </div>
+                </div>
+                <div id="game-controls" class="dice-controls"></div>
+                <p id="game-result" class="dice-result">No games played yet.</p>
+            </section>
+
+            <section id="coin-flip-game" class="game-panel hidden">
+                <h2>Coin Flip</h2>
+                <p>Heads or Tails?</p>
+                <p id="coinResult">No games played yet</p>
+                <p id="choice"></p>
+                <button type="button" id="heads">Heads</button>
+                <button type="button" id="tails">Tails</button>
+            </section>
+        </div>
+    </main>
+
+    <section class="full-width-section">
+        <h2>Recommended Games</h2>
+        <div id="rec-list" class="rec-list" aria-live="polite"></div>
+    </section>
+
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>

@@ -12,10 +12,10 @@
         <div>
             <h1>PiNNTORP</h1>
             <nav class="tab-nav" aria-label="Primary">
-                <a class="tab-link is-active" href="index.html">Home</a>
+                <a class="tab-link" href="index.html">Home</a>
                 <a class="tab-link" href="games.html">Games</a>
                 <a class="tab-link" href="friends.html">Friends</a>
-                <a class="tab-link" href="profile.html">Profile</a>
+                <a class="tab-link is-active" href="profile.html">Profile</a>
             </nav>
         </div>
         <div class="header-meta">
@@ -27,31 +27,19 @@
     <main class="layout">
         <div class="column">
             <section>
-                <h2>Home</h2>
-                <p>Welcome back to PiNNTORP.</p>
-                <p>Use the tabs above to jump between your games, friends list, and profile stats.</p>
-            </section>
-
-            <section>
-                <h2>Quick Links</h2>
-                <p>Open the Games tab to play Slots, Dice Roll, or Coin Flip.</p>
-                <p>Open Friends to manage your list and improve recommendations.</p>
+                <h2>Profile</h2>
+                <p>Your current play history and performance are tracked below.</p>
             </section>
         </div>
 
         <div class="column">
             <section>
-                <h2>Overview</h2>
-                <p>Your recommendations are shown below in ranked order.</p>
-                <p>Select any recommendation card to jump straight to that game.</p>
+                <h2>Stats</h2>
+                <div id="stats-view"></div>
+                <button id="reset-stats" type="button">Reset</button>
             </section>
         </div>
     </main>
-
-    <section class="full-width-section">
-        <h2>Recommended Games</h2>
-        <div id="rec-list" class="rec-list" aria-live="polite"></div>
-    </section>
 
     <script type="module" src="js/app.js"></script>
 </body>

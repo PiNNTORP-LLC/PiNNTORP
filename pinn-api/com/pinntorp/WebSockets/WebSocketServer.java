@@ -1,5 +1,6 @@
 package com.pinntorp.WebSockets;
 
+import com.pinntorp.Server.Api.ConnectionHandler;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -19,14 +20,16 @@ public class WebSocketServer extends Thread
 {
     private ServerSocket serverSocket = null;
     private volatile boolean running = true;
+    private String webRoot;
 
     /**
      * Creates a WebSocket server that will listen for incoming
      * connections on the specified port.
      * @param port  the port to listen on
      */
-    WebSocketServer(int port) throws IOException
+    public WebSocketServer(int port, String webRoot) throws IOException
     {
+        this.webRoot = webRoot;
         this.serverSocket = new ServerSocket(port);
     }
 
@@ -53,11 +56,12 @@ public class WebSocketServer extends Thread
             {
                 // Accept incoming connection
                 Socket clientTcp = this.serverSocket.accept();
-                WebSocket clientWs = new WebSocket(clientTcp);
+                ConnectionHandler handler = new ConnectionHandler(clientTcp, webRoot);
+                handler.start();
             }
             catch(Exception e)
             {
-                System.out.println("Encountered " + e.getClass().getName() + " while trying to accept an incoming WebSocket connection.\nTrace:\n" + e.getStackTrace() + "\nException:\n" + e);
+                System.out.println("Encountered " + e.getClass().getName() + " while trying to accept an incoming connection.\nTrace:\n" + e.getStackTrace() + "\nException:\n" + e);
             }
         }
     }
