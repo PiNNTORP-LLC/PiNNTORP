@@ -1,5 +1,6 @@
 import { state } from "../../core/state.js";
 import { saveState } from "../../core/storage.js";
+import { logResult } from "../../stats/stats.js";
 import { getAuthHeaders, hasBackendSession, requestJson } from "../../core/network.js";
 
 // helper functions for checking values of slot numbers
@@ -56,20 +57,24 @@ async function playSlotRound() {
     // if all three match then multiply the number on the machine by the original bet
     // (for now assuming the user put a $5 bet)
     if (threeOutOfThreeMatch(firstNum, secNum, thirdNum)) {
+        const jackpot = firstNum * 5;
         user.gamesPlayed += 1;
         user.wins += 1;
-        user.balance += firstNum * 5;
-        user.profit += firstNum * 5;
+        user.balance += jackpot;
+        user.profit += jackpot;
+        logResult("Slots", jackpot);
     } else if (twoOutOfThreeMatch(firstNum, secNum, thirdNum)) {
         user.gamesPlayed += 1;
         user.wins += 1;
         user.balance += 10;
-        user.profit += 10; // double if only 2 match
+        user.profit += 10;
+        logResult("Slots", 10);
     } else {
         user.gamesPlayed += 1;
         user.losses += 1;
         user.balance -= 5;
         user.profit -= 5;
+        logResult("Slots", -5);
     }
 
     saveState(state);

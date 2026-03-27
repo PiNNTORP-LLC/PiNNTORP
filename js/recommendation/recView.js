@@ -21,13 +21,37 @@ function getGameLink(gameName) {
     };
 }
 
+function buildReasonLine(rec) {
+    const hasFriends = rec.friends.length > 0;
+    const hasPlays   = rec.playCount > 0;
+
+    if (hasFriends && hasPlays) {
+        const label = rec.friends.length === 1 ? "friend" : "friends";
+        return {
+            meta: `You play this & ${rec.friends.length} ${label} recommend it`,
+            detail: rec.friends.join(", ")
+        };
+    }
+    if (hasFriends) {
+        const label = rec.friends.length === 1 ? "friend" : "friends";
+        return {
+            meta: `Recommended by ${rec.friends.length} ${label}`,
+            detail: rec.friends.join(", ")
+        };
+    }
+    const timesLabel = rec.playCount === 1 ? "time" : "times";
+    return {
+        meta: `You've played this ${rec.playCount} ${timesLabel}`,
+        detail: ""
+    };
+}
+
 function createRecommendationCard(rec, index) {
     const item = document.createElement("a");
-    const friendsWhoPlay = rec.friends.join(", ");
     const gameLink = getGameLink(rec.game);
-    const friendLabel = rec.friends.length === 1 ? "friend" : "friends";
     const activeHash = window.location.hash.slice(1);
     const isActive = onGamesPage && gameLink.hash && gameLink.hash === activeHash;
+    const reason = buildReasonLine(rec);
 
     item.className = isActive ? "rec-card rec-card-active" : "rec-card";
     item.href = gameLink.href;
@@ -35,8 +59,8 @@ function createRecommendationCard(rec, index) {
     item.innerHTML = `
         <span class="rec-rank">#${index + 1}</span>
         <strong class="rec-title">${gameLink.label}</strong>
-        <span class="rec-meta">Recommended by ${rec.friends.length} ${friendLabel}</span>
-        <span class="rec-friends">${friendsWhoPlay}</span>
+        <span class="rec-meta">${reason.meta}</span>
+        ${reason.detail ? `<span class="rec-friends">${reason.detail}</span>` : ""}
     `;
 
     return item;

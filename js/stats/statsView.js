@@ -1,4 +1,4 @@
-import { getStats, resetStats } from "./stats.js";
+import { getStats, getHistory, resetStats } from "./stats.js";
 
 export function renderBalance() {
     const el = document.getElementById("balance-value");
@@ -29,15 +29,41 @@ export function renderStats() {
     // <p>Losses: ${s.losses}</p>
 }
 
+export function renderHistory() {
+    const el = document.getElementById("history-list");
+    if (!el) return;
+
+    const history = getHistory();
+
+    if (history.length === 0) {
+        el.innerHTML = '<p class="history-empty">No games played yet.</p>';
+        return;
+    }
+
+    el.innerHTML = history.map(entry => {
+        const sign = entry.delta > 0 ? "+" : "";
+        const cls = entry.delta > 0 ? "history-win" : entry.delta < 0 ? "history-loss" : "history-push";
+        const deltaText = entry.delta === 0 ? "Push" : `${sign}$${Math.abs(entry.delta)}`;
+        const time = new Date(entry.ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        return `<div class="history-row">
+            <span class="history-game">${entry.game}</span>
+            <span class="history-delta ${cls}">${deltaText}</span>
+            <span class="history-time">${time}</span>
+        </div>`;
+    }).join("");
+}
+
 export function initStatsView() {
     const resetButton = document.getElementById("reset-stats");
 
     if (resetButton) {
         resetButton.addEventListener("click", () => {
-        resetStats();
-        renderStats();
+            resetStats();
+            renderStats();
+            renderHistory();
         });
     }
 
     renderStats();
+    renderHistory();
 }

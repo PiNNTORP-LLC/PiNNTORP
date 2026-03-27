@@ -1,5 +1,6 @@
 import { state } from "../../core/state.js";
 import { saveState } from "../../core/storage.js";
+import { logResult } from "../../stats/stats.js";
 
 const SUITS = ["♠", "♣", "♥", "♦"];
 const VALUES = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
@@ -67,6 +68,7 @@ function hit() {
         user.losses += 1;
         user.balance -= currentBet;
         user.profit -= currentBet;
+        logResult("Blackjack", -currentBet);
         saveState(state);
     }
     return {
@@ -104,6 +106,7 @@ function stand() {
     else if (outcome === "loss") user.losses += 1;
     user.balance += delta;
     user.profit += delta;
+    logResult("Blackjack", delta);
     saveState(state);
 
     return {
@@ -124,6 +127,7 @@ function resolveBlackjack() {
     user.wins += 1;
     user.balance += payout;
     user.profit += payout;
+    logResult("Blackjack", payout);
     saveState(state);
     return {
         dealerHand: [...dealerHand],

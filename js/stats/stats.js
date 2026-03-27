@@ -8,13 +8,26 @@ export function getStats() {
     return { balance, wins, losses, gamesPlayed, profit, ratio };
 }
 
+export function getHistory() {
+    const user = state.users[state.currentUser];
+    return Array.isArray(user.history) ? user.history : [];
+}
+
+// Call this before saveState in each game — adds one entry to the front,
+// keeps the log capped at 50 entries.
+export function logResult(game, delta) {
+    const user = state.users[state.currentUser];
+    user.history.unshift({ game, delta, ts: Date.now() });
+    if (user.history.length > 50) user.history.length = 50;
+}
+
 export function resetStats() {
-    // state.stats = { games_won: 0, games_lost: 0, gamesPlayed: 0 };
     const user = state.users[state.currentUser];
     user.balance = 100;
     user.gamesPlayed = 0;
     user.wins = 0;
     user.losses = 0;
     user.profit = 0;
+    user.history = [];
     saveState(state);
 }

@@ -1,5 +1,5 @@
 import { getGameApi } from "./game.js";
-import { renderStats } from "../stats/statsView.js";
+import { renderStats, renderHistory } from "../stats/statsView.js";
 import { renderRec } from "../recommendation/recView.js";
 
 const diceGameApi = getGameApi("dice");
@@ -134,6 +134,7 @@ export function initGameView() {
                 btn.disabled = false;
             });
             renderStats();
+            renderHistory();
             renderRec();
         });
         controls.appendChild(button);
@@ -481,6 +482,7 @@ export function initBlackjackView() {
             resultEl.textContent = `♠ Blackjack! You win $${final.payout}!`;
             setPhase("idle");
             renderStats();
+            renderHistory();
             renderRec();
         } else {
             setPhase("playing");
@@ -497,6 +499,7 @@ export function initBlackjackView() {
             resultEl.textContent = `Bust! You had ${round.playerTotal}.`;
             setPhase("idle");
             renderStats();
+            renderHistory();
             renderRec();
         }
     });

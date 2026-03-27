@@ -856,6 +856,60 @@ li {
     box-shadow: 0 0 0 var(--gold-dark);
 }
 
+/* === HISTORY === */
+
+.history-section {
+    margin-top: 1.5rem;
+}
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.history-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.55rem 0.85rem;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #100e08, #1a1610);
+    border: 1px solid var(--gold-border);
+    font-size: 0.9rem;
+}
+
+.history-game {
+    color: var(--text);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.history-delta {
+    font-weight: 700;
+    letter-spacing: 1px;
+    min-width: 56px;
+    text-align: right;
+}
+
+.history-win  { color: #5eda7a; }
+.history-loss { color: #e07060; }
+.history-push { color: var(--text-muted); }
+
+.history-time {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    font-family: Arial, sans-serif;
+    min-width: 48px;
+    text-align: right;
+}
+
+.history-empty {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
 /* === BLACKJACK === */
 
 .bj-table {

@@ -1,5 +1,6 @@
 import { state } from "../../core/state.js";
 import { saveState } from "../../core/storage.js";
+import { logResult } from "../../stats/stats.js";
 import { getAuthHeaders, hasBackendSession, requestJson } from "../../core/network.js";
 
 // for now using the assumption that the user makes a $5 bet
@@ -39,10 +40,12 @@ async function rollDice(guess) {
         user.wins += 1;
         user.balance += 10;
         user.profit += 10;
+        logResult("Dice Roll", 10);
     } else {
         user.losses += 1;
         user.balance -= 5;
         user.profit -= 5;
+        logResult("Dice Roll", -5);
     }
 
     saveState(state);

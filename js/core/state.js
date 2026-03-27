@@ -6,7 +6,8 @@ function createUserTemplate() {
         losses: 0,
         profit: 0,
         friends: [],
-        favoriteGames: []
+        favoriteGames: [],
+        history: []
     };
 }
 
@@ -27,7 +28,8 @@ function normalizeUser(user = {}) {
         balance: Number.isFinite(user.balance) ? user.balance : 100,
         profit: Number.isFinite(user.profit) ? user.profit : 0,
         friends: Array.isArray(user.friends) ? user.friends : [],
-        favoriteGames: Array.isArray(user.favoriteGames) ? user.favoriteGames : []
+        favoriteGames: Array.isArray(user.favoriteGames) ? user.favoriteGames : [],
+        history: Array.isArray(user.history) ? user.history : []
     };
     return nextUser;
 }
