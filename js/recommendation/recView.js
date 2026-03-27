@@ -4,7 +4,8 @@ const GAME_HASHES = {
     "slots": { hash: "slots-game", label: "Slots" },
     "dice roll": { hash: "dice-game", label: "Dice Roll" },
     "number guesser": { hash: "dice-game", label: "Dice Roll" },
-    "coin flip": { hash: "coin-flip-game", label: "Coin Flip" }
+    "coin flip": { hash: "coin-flip-game", label: "Coin Flip" },
+    "blackjack": { hash: "blackjack-game", label: "Blackjack" }
 };
 
 const onGamesPage = window.location.pathname.endsWith("games.html");

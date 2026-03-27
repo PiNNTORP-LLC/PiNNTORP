@@ -1,4 +1,4 @@
-import { initGameStage, initGameView, initSlotView, initCoinFlipView } from "./game/gameView.js";
+import { initGameStage, initGameView, initSlotView, initCoinFlipView, initBlackjackView } from "./game/gameView.js";
 import { initFriendsView } from "./friends/friendsView.js";
 import { initStatsView } from "./stats/statsView.js";
 import { initRecView } from "./recommendation/recView.js";
@@ -17,6 +17,7 @@ initGameStage();
 initSlotView();
 initGameView();
 initCoinFlipView();
+initBlackjackView();
 initFriendsView();
 initStatsView();
 initRecView();

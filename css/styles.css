@@ -17,6 +17,12 @@
 
 html {
     scroll-behavior: smooth;
+    /* Dark base + diagonal gambling symbol grid in bg */
+    background-color: var(--bg);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='120'%3E%3Ctext x='15' y='32' font-size='18' fill='rgba(212,175,55,0.10)' font-family='serif'%3E%E2%99%A0%3C/text%3E%3Ctext x='75' y='52' font-size='18' fill='rgba(212,175,55,0.10)' font-family='serif'%3E%E2%99%A6%3C/text%3E%3Ctext x='135' y='72' font-size='18' fill='rgba(212,175,55,0.10)' font-family='serif'%3E%E2%99%A3%3C/text%3E%3Ctext x='195' y='92' font-size='18' fill='rgba(212,175,55,0.10)' font-family='serif'%3E%E2%99%A5%3C/text%3E%3C/svg%3E");
+    background-size: 240px 120px;
+    background-attachment: fixed;
+    background-repeat: repeat;
 }
 
 * {
@@ -29,11 +35,8 @@ body {
     padding: 1rem;
     line-height: 1.4;
     font-family: 'Cinzel', Georgia, serif;
-    background: var(--bg);
+    background-color: transparent;
     color: var(--text);
-    background-image:
-        radial-gradient(ellipse at 20% 10%, rgba(212, 175, 55, 0.04) 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 90%, rgba(192, 57, 43, 0.05) 0%, transparent 50%);
     min-height: 100vh;
 }
 
@@ -851,6 +854,240 @@ li {
 .coin-btn:active:not(:disabled) {
     transform: translateY(4px);
     box-shadow: 0 0 0 var(--gold-dark);
+}
+
+/* === BLACKJACK === */
+
+.bj-table {
+    background: linear-gradient(160deg, #0a2a14, #0d1f0f);
+    border: 2px solid var(--gold-border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    max-width: 600px;
+    margin: 0 auto 1.5rem;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+.bj-area-label {
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 0 0 0.5rem;
+}
+
+.bj-total {
+    color: var(--gold);
+    margin-left: 0.4rem;
+}
+
+.bj-hand {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    min-height: 108px;
+}
+
+.bj-divider {
+    height: 1px;
+    background: var(--gold-border);
+}
+
+.bj-bet-area {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.bj-bet-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 64px;
+}
+
+.bj-bet-label {
+    font-size: 0.65rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 0.1rem;
+}
+
+.bj-bet-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 1px;
+    line-height: 1;
+}
+
+.bj-bet-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid var(--gold-border);
+    background: linear-gradient(135deg, #2a2210, #1e1a0e);
+    color: var(--gold);
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: all 0.1s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bj-bet-btn:hover:not(:disabled) {
+    border-color: var(--gold);
+    color: var(--gold-light);
+    background: linear-gradient(135deg, #3a3015, #2a2210);
+}
+
+.bj-bet-btn:active:not(:disabled) {
+    transform: scale(0.92);
+}
+
+.bj-bet-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.bj-controls {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.bj-result {
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--gold);
+    letter-spacing: 1px;
+    min-height: 1.6rem;
+}
+
+.bj-btn {
+    padding: 0.75rem 2rem;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border-radius: 10px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.1s ease;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.4), 0 6px 16px rgba(0,0,0,0.3);
+}
+
+.bj-btn:active:not(:disabled) {
+    transform: translateY(4px);
+    box-shadow: 0 0 0 rgba(0,0,0,0.4);
+}
+
+.bj-btn-primary {
+    background: linear-gradient(135deg, #2a2210, #1e1a0e);
+    border-color: var(--gold-border);
+    color: var(--gold);
+}
+
+.bj-btn-primary:hover {
+    border-color: var(--gold);
+    color: var(--gold-light);
+    background: linear-gradient(135deg, #3a3015, #2a2210);
+    box-shadow: 0 4px 0 rgba(0,0,0,0.4), 0 8px 20px rgba(212,175,55,0.15);
+}
+
+.bj-btn-hit {
+    background: linear-gradient(135deg, #0d2a10, #0a1f0d);
+    border-color: rgba(50,180,80,0.3);
+    color: #5eda7a;
+}
+
+.bj-btn-hit:hover {
+    border-color: #5eda7a;
+    color: #8affa0;
+    background: linear-gradient(135deg, #102e14, #0d2510);
+    box-shadow: 0 4px 0 rgba(0,0,0,0.4), 0 8px 20px rgba(50,180,80,0.15);
+}
+
+.bj-btn-stand {
+    background: linear-gradient(135deg, #2a100d, #1f0d0a);
+    border-color: rgba(192,57,43,0.35);
+    color: #e07060;
+}
+
+.bj-btn-stand:hover {
+    border-color: #e07060;
+    color: #ff9080;
+    background: linear-gradient(135deg, #38140f, #2a100d);
+    box-shadow: 0 4px 0 rgba(0,0,0,0.4), 0 8px 20px rgba(192,57,43,0.2);
+}
+
+/* === CARDS === */
+
+@keyframes card-deal {
+    from { opacity: 0; transform: translateY(-20px) scale(0.9); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.card {
+    width: 72px;
+    height: 104px;
+    background: #f8f4e8;
+    border-radius: 8px;
+    border: 1px solid #c8c0a0;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    padding: 5px 6px;
+    font-family: Georgia, serif;
+    font-weight: bold;
+    color: #1a1a1a;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.8);
+    animation: card-deal 0.25s ease-out both;
+    user-select: none;
+    flex-shrink: 0;
+}
+
+.card.red { color: #c0392b; }
+
+.card-corner {
+    font-size: 0.68rem;
+    line-height: 1.15;
+    white-space: nowrap;
+}
+
+.card-br {
+    transform: rotate(180deg);
+    text-align: right;
+    align-self: end;
+}
+
+.card-suit-center {
+    font-size: 1.75rem;
+    text-align: center;
+    align-self: center;
+    line-height: 1;
+}
+
+.card.face-down {
+    background: repeating-linear-gradient(
+        45deg,
+        #1a3060,
+        #1a3060 5px,
+        #0d2044 5px,
+        #0d2044 10px
+    );
+    border-color: var(--gold-dark);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06);
 }
 
 /* === RESPONSIVE === */

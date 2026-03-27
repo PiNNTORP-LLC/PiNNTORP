@@ -5,6 +5,7 @@ import { renderRec } from "../recommendation/recView.js";
 const diceGameApi = getGameApi("dice");
 const slotGameApi = getGameApi("slots");
 const coinFlipApi = getGameApi("coinFlip");
+const blackjackApi = getGameApi("blackjack");
 
 export function initGameStage() {
     // Read the game switcher links and playable panels on the page
@@ -91,27 +92,22 @@ export function initGameView() {
             let tossPromise = Promise.resolve();
             if (gsap && dice) {
                 gsap.set(dice, { rotationX: 0, rotationY: 0, rotationZ: 0 });
-                let tossTl = gsap.timeline();
 
-                tossTl.to(dice, {
-                    duration: 0.6,
-                    y: -150,
-                    scale: 1.2,
-                    rotationX: 720,
-                    rotationY: 1080,
-                    rotationZ: 360,
-                    ease: "power2.out"
-                }).to(dice, {
-                    duration: 0.6,
-                    y: 0,
-                    scale: 1,
+                // Arc (y/scale) and rotation are independent so the spin
+                // stays at constant speed throughout the full throw
+                const arcTl = gsap.timeline();
+                arcTl.to(dice, { duration: 0.6, y: -150, scale: 1.2, ease: "power2.out" })
+                     .to(dice, { duration: 0.6, y: 0,    scale: 1,   ease: "power2.in"  });
+
+                gsap.to(dice, {
+                    duration: 1.2,
                     rotationX: 1440,
                     rotationY: 2160,
                     rotationZ: 720,
-                    ease: "power2.in"
+                    ease: "none"
                 });
 
-                tossPromise = tossTl.then ? tossTl.then(() => {}) : new Promise((resolve) => setTimeout(resolve, 1200));
+                tossPromise = arcTl.then ? arcTl.then(() => {}) : new Promise((resolve) => setTimeout(resolve, 1200));
             }
 
             // Play the round and wait for the toss to finish
@@ -400,4 +396,125 @@ export function initCoinFlipView() {
 
     headsButton.addEventListener("click", () => doFlip("Heads"));
     tailsButton.addEventListener("click", () => doFlip("Tails"));
+}
+
+export function initBlackjackView() {
+    const dealBtn = document.getElementById("bj-deal");
+    const hitBtn = document.getElementById("bj-hit");
+    const standBtn = document.getElementById("bj-stand");
+    const betMinusBtn = document.getElementById("bj-bet-minus");
+    const betPlusBtn = document.getElementById("bj-bet-plus");
+    const betValueEl = document.getElementById("bj-bet-value");
+    const playerHandEl = document.getElementById("bj-player-hand");
+    const dealerHandEl = document.getElementById("bj-dealer-hand");
+    const playerTotalEl = document.getElementById("bj-player-total");
+    const dealerTotalEl = document.getElementById("bj-dealer-total");
+    const resultEl = document.getElementById("bj-result");
+
+    if (!dealBtn) return;
+
+    const BET_STEP = 5;
+    const BET_MIN = 5;
+    let bet = 5;
+
+    function updateBetUI() {
+        betValueEl.textContent = `$${bet}`;
+        betMinusBtn.disabled = bet <= BET_MIN;
+    }
+
+    betMinusBtn.addEventListener("click", () => {
+        bet = Math.max(BET_MIN, bet - BET_STEP);
+        updateBetUI();
+    });
+
+    betPlusBtn.addEventListener("click", () => {
+        bet += BET_STEP;
+        updateBetUI();
+    });
+
+    updateBetUI();
+
+    function makeCard(card, faceDown = false, delay = 0) {
+        const el = document.createElement("div");
+        const isRed = !faceDown && (card.suit === "♥" || card.suit === "♦");
+        el.className = faceDown ? "card face-down" : `card${isRed ? " red" : ""}`;
+        el.style.animationDelay = `${delay}s`;
+        if (!faceDown) {
+            el.innerHTML =
+                `<span class="card-corner">${card.value}<br>${card.suit}</span>` +
+                `<span class="card-suit-center">${card.suit}</span>` +
+                `<span class="card-corner card-br">${card.value}<br>${card.suit}</span>`;
+        }
+        return el;
+    }
+
+    function renderHand(el, cards, hideSecond = false) {
+        el.innerHTML = "";
+        cards.forEach((card, i) => {
+            el.appendChild(makeCard(card, hideSecond && i === 1, i * 0.1));
+        });
+    }
+
+    function setPhase(phase) {
+        const playing = phase === "playing";
+        dealBtn.style.display = playing ? "none" : "";
+        hitBtn.style.display = playing ? "" : "none";
+        standBtn.style.display = playing ? "" : "none";
+        betMinusBtn.disabled = playing || bet <= BET_MIN;
+        betPlusBtn.disabled = playing;
+    }
+
+    setPhase("idle");
+
+    dealBtn.addEventListener("click", () => {
+        resultEl.textContent = "";
+        const round = blackjackApi.deal(bet);
+        renderHand(playerHandEl, round.playerHand);
+        renderHand(dealerHandEl, round.dealerHand, true);
+        playerTotalEl.textContent = round.playerTotal;
+        dealerTotalEl.textContent = "?";
+
+        if (round.isBlackjack) {
+            const final = blackjackApi.resolveBlackjack();
+            renderHand(dealerHandEl, final.dealerHand);
+            dealerTotalEl.textContent = final.dealerTotal;
+            resultEl.textContent = `♠ Blackjack! You win $${final.payout}!`;
+            setPhase("idle");
+            renderStats();
+            renderRec();
+        } else {
+            setPhase("playing");
+        }
+    });
+
+    hitBtn.addEventListener("click", () => {
+        const round = blackjackApi.hit();
+        renderHand(playerHandEl, round.playerHand);
+        playerTotalEl.textContent = round.playerTotal;
+        if (round.bust) {
+            renderHand(dealerHandEl, round.dealerHand);
+            dealerTotalEl.textContent = round.dealerTotal;
+            resultEl.textContent = `Bust! You had ${round.playerTotal}.`;
+            setPhase("idle");
+            renderStats();
+            renderRec();
+        }
+    });
+
+    standBtn.addEventListener("click", () => {
+        const final = blackjackApi.stand();
+        renderHand(playerHandEl, final.playerHand);
+        renderHand(dealerHandEl, final.dealerHand);
+        playerTotalEl.textContent = final.playerTotal;
+        dealerTotalEl.textContent = final.dealerTotal;
+        const msg = {
+            win:  `You win! +$${final.delta}`,
+            loss: `Dealer wins. -$${Math.abs(final.delta)}`,
+            push: "Push — it's a tie."
+        };
+        resultEl.textContent = msg[final.outcome];
+        setPhase("idle");
+        renderStats();
+        renderRec();
+    });
 }

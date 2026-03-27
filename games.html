@@ -31,6 +31,7 @@
                 <a class="game-tab-link is-active" href="#slots-game" data-game-target="slots-game">Slots</a>
                 <a class="game-tab-link" href="#dice-game" data-game-target="dice-game">Dice Roll</a>
                 <a class="game-tab-link" href="#coin-flip-game" data-game-target="coin-flip-game">Coin Flip</a>
+                <a class="game-tab-link" href="#blackjack-game" data-game-target="blackjack-game">Blackjack</a>
             </nav>
         </section>
 
@@ -126,6 +127,35 @@
                     <button type="button" id="tails" class="coin-btn">Tails</button>
                 </div>
             </div>
+        </section>
+
+        <section id="blackjack-game" class="game-panel hidden">
+            <h2>Blackjack</h2>
+            <div class="bj-table">
+                <div class="bj-dealer-area">
+                    <p class="bj-area-label">Dealer <span id="bj-dealer-total" class="bj-total"></span></p>
+                    <div id="bj-dealer-hand" class="bj-hand"></div>
+                </div>
+                <div class="bj-divider"></div>
+                <div class="bj-player-area">
+                    <p class="bj-area-label">You <span id="bj-player-total" class="bj-total"></span></p>
+                    <div id="bj-player-hand" class="bj-hand"></div>
+                </div>
+            </div>
+            <div class="bj-bet-area">
+                <button type="button" id="bj-bet-minus" class="bj-bet-btn" aria-label="Decrease bet">−</button>
+                <div class="bj-bet-display">
+                    <span class="bj-bet-label">Bet</span>
+                    <span id="bj-bet-value" class="bj-bet-value">$5</span>
+                </div>
+                <button type="button" id="bj-bet-plus" class="bj-bet-btn" aria-label="Increase bet">+</button>
+            </div>
+            <div class="bj-controls">
+                <button type="button" id="bj-deal" class="bj-btn bj-btn-primary">Deal</button>
+                <button type="button" id="bj-hit" class="bj-btn bj-btn-hit" style="display:none">Hit</button>
+                <button type="button" id="bj-stand" class="bj-btn bj-btn-stand" style="display:none">Stand</button>
+            </div>
+            <p id="bj-result" class="bj-result"></p>
         </section>
 
         <section class="full-width-section">
