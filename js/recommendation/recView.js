@@ -1,16 +1,22 @@
 import { getRecommendedGames } from "./rec.js";
 
-const GAME_LINKS = {
-    slots: { href: "games.html#slots-game", label: "Slots" },
-    "dice roll": { href: "games.html#dice-game", label: "Dice Roll" },
-    "number guesser": { href: "games.html#dice-game", label: "Dice Roll" },
-    "coin flip": { href: "games.html#coin-flip-game", label: "Coin Flip" }
+const GAME_HASHES = {
+    "slots": { hash: "slots-game", label: "Slots" },
+    "dice roll": { hash: "dice-game", label: "Dice Roll" },
+    "number guesser": { hash: "dice-game", label: "Dice Roll" },
+    "coin flip": { hash: "coin-flip-game", label: "Coin Flip" }
 };
 
+const onGamesPage = window.location.pathname.endsWith("games.html");
+
 function getGameLink(gameName) {
-    return GAME_LINKS[gameName.trim().toLowerCase()] ?? {
-        href: "games.html",
-        label: gameName
+    const entry = GAME_HASHES[gameName.trim().toLowerCase()];
+    if (!entry) return { href: "games.html", label: gameName, hash: null };
+    // switches the panel without a full navigation.
+    return {
+        href: onGamesPage ? `#${entry.hash}` : `games.html#${entry.hash}`,
+        label: entry.label,
+        hash: entry.hash
     };
 }
 
@@ -19,8 +25,10 @@ function createRecommendationCard(rec, index) {
     const friendsWhoPlay = rec.friends.join(", ");
     const gameLink = getGameLink(rec.game);
     const friendLabel = rec.friends.length === 1 ? "friend" : "friends";
+    const activeHash = window.location.hash.slice(1);
+    const isActive = onGamesPage && gameLink.hash && gameLink.hash === activeHash;
 
-    item.className = "rec-card";
+    item.className = isActive ? "rec-card rec-card-active" : "rec-card";
     item.href = gameLink.href;
     item.setAttribute("aria-label", `Open ${gameLink.label}, recommendation ${index + 1}`);
     item.innerHTML = `
@@ -56,4 +64,8 @@ export function renderRec() {
 
 export function initRecView() {
     renderRec();
+    // Re-render when the active game tab changes so the active card stays in sync
+    if (onGamesPage) {
+        window.addEventListener("hashchange", renderRec);
+    }
 }
