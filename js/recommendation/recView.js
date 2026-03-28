@@ -1,4 +1,6 @@
 import { getRecommendedGames } from "./rec.js";
+import { isLoggedIn } from "../core/auth.js";
+
 
 const GAME_HASHES = {
     "slots": { hash: "slots-game", label: "Slots" },
@@ -39,11 +41,14 @@ function buildReasonLine(rec) {
             detail: rec.friends.join(", ")
         };
     }
-    const timesLabel = rec.playCount === 1 ? "time" : "times";
-    return {
-        meta: `You've played this ${rec.playCount} ${timesLabel}`,
-        detail: ""
-    };
+    if (hasPlays) {
+        const timesLabel = rec.playCount === 1 ? "time" : "times";
+        return {
+            meta: `You've played this ${rec.playCount} ${timesLabel}`,
+            detail: ""
+        };
+    }
+    return { meta: "Popular game", detail: "" };
 }
 
 function createRecommendationCard(rec, index) {
@@ -70,6 +75,12 @@ export function renderRec() {
     const list = document.getElementById("rec-list");
 
     if (!list) return;
+
+    if (!isLoggedIn()) {
+        list.className = "rec-list";
+        list.innerHTML = '<p class="rec-empty">Log in to see personalized recommendations.</p>';
+        return;
+    }
 
     const recommendations = getRecommendedGames();
 

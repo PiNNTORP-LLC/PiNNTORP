@@ -19,6 +19,9 @@ export function logResult(game, delta) {
     const user = state.users[state.currentUser];
     user.history.unshift({ game, delta, ts: Date.now() });
     if (user.history.length > 50) user.history.length = 50;
+    if (!user.favoriteGames.includes(game)) {
+        user.favoriteGames.push(game);
+    }
 }
 
 export function resetStats() {

@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { addFriend, getFriends, removeFriend } from "../js/friends/friends.js";
-import { state, replaceState } from "../js/core/state.js";
+import { ensureUserState, state, replaceState } from "../js/core/state.js";
 
 globalThis.localStorage = {
     saved: {},
@@ -65,6 +65,35 @@ test("main_user already has dummy_alice on the friend list", () => {
 
     assert.equal(friends.length, 1);
     assert.equal(friends[0], "dummy_alice");
+});
+
+test("default fallback state seeds all dummy users into main_user friends", () => {
+    globalThis.localStorage.clear();
+    replaceState(null);
+
+    assert.deepEqual(state.users.main_user.friends, [
+        "dummy_alice",
+        "dummy_bob",
+        "dummy_charlie"
+    ]);
+});
+
+test("ensureUserState creates a separate local profile for a signed-in username", () => {
+    replaceState(null);
+
+    const sessionUser = ensureUserState("casey");
+    state.currentUser = "casey";
+    sessionUser.wins = 4;
+
+    assert.equal(state.users.casey.wins, 4);
+    assert.equal(state.users.main_user.wins, 0);
+    assert.deepEqual(Object.keys(state.users).sort(), [
+        "casey",
+        "dummy_alice",
+        "dummy_bob",
+        "dummy_charlie",
+        "main_user"
+    ]);
 });
 
 test("blank text from the friend form is ignored", () => {

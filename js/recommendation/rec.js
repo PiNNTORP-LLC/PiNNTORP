@@ -13,7 +13,6 @@ function canonicalKey(name) {
 
 export function getRecommendedGames() {
     const user = state.users[state.currentUser];
-    const userFavKeys = user.favoriteGames.map(g => canonicalKey(g));
 
     // --- Signal 1: play frequency from the user's own history ---
     const playCounts = {};   // lowercase game key -> count
@@ -43,8 +42,6 @@ export function getRecommendedGames() {
 
     const results = [];
     for (const key of allKeys) {
-        if (userFavKeys.includes(key)) continue;
-
         const playCount = playCounts[key] || 0;
         const friends   = friendLists[key] || [];
 

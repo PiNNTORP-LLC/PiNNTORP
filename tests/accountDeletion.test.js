@@ -1,7 +1,7 @@
 import test, { beforeEach } from "node:test";
 import assert from "node:assert/strict";
 
-import { state, replaceState } from "../js/core/state.js";
+import { ensureUserState, state, replaceState } from "../js/core/state.js";
 import { deleteCurrentAccount } from "../js/account/account.js";
 
 globalThis.localStorage = {
@@ -52,6 +52,14 @@ function seedAccountState() {
 beforeEach(() => {
     globalThis.localStorage.clear();
     seedAccountState();
+});
+
+test("ensureUserState adds a new signed-in user without reusing main_user stats", () => {
+    const sessionUser = ensureUserState("new_user");
+    sessionUser.wins = 9;
+
+    assert.equal(state.users.new_user.wins, 9);
+    assert.equal(state.users.main_user.wins, 8);
 });
 
 test("red: deleting the current account removes that user from the state", () => {

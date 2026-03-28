@@ -11,6 +11,23 @@ function createUserTemplate() {
     };
 }
 
+function getDummyUsers() {
+    return {
+        "dummy_alice": {
+            ...createUserTemplate(),
+            favoriteGames: ["Slots"]
+        },
+        "dummy_bob": {
+            ...createUserTemplate(),
+            favoriteGames: ["Slots", "Coin Flip"]
+        },
+        "dummy_charlie": {
+            ...createUserTemplate(),
+            favoriteGames: ["Number Guesser", "Coin Flip"]
+        }
+    };
+}
+
 // export const state = {
 //     friends: [],
 //     stats: { wins: 0, losses: 0, gamesPlayed: 0 }
@@ -22,16 +39,45 @@ export const state = {
 };
 
 function normalizeUser(user = {}) {
+    const history = Array.isArray(user.history) ? user.history : [];
+    let favoriteGames = Array.isArray(user.favoriteGames) ? user.favoriteGames : [];
+    if (favoriteGames.length === 0 && history.length > 0) {
+        const seen = new Set();
+        for (const entry of history) {
+            if (entry.game && !seen.has(entry.game)) {
+                seen.add(entry.game);
+                favoriteGames.push(entry.game);
+            }
+        }
+    }
     const nextUser = {
         ...createUserTemplate(),
         ...user,
         balance: Number.isFinite(user.balance) ? user.balance : 100,
         profit: Number.isFinite(user.profit) ? user.profit : 0,
-        friends: Array.isArray(user.friends) ? user.friends : [],
-        favoriteGames: Array.isArray(user.favoriteGames) ? user.favoriteGames : [],
-        history: Array.isArray(user.history) ? user.history : []
+        friends: Array.isArray(user.friends) ? [...user.friends] : [],
+        favoriteGames: [...favoriteGames],
+        history: [...history]
     };
     return nextUser;
+}
+
+export function ensureUserState(username) {
+    if (!username) return null;
+
+    if (!state.users[username]) {
+        state.users[username] = createUserTemplate();
+    } else {
+        state.users[username] = normalizeUser(state.users[username]);
+    }
+
+    const dummyUsers = getDummyUsers();
+    for (const [dummyUsername, dummyUser] of Object.entries(dummyUsers)) {
+        // Always restore dummy users so stale blank entries don't survive
+        state.users[dummyUsername] = dummyUser;
+    }
+
+    return state.users[username];
 }
 
 export function replaceState(nextState) {
@@ -44,20 +90,18 @@ export function replaceState(nextState) {
         for (const username of Object.keys(nextState.users)) {
             state.users[username] = normalizeUser(nextState.users[username]);
         }
+        ensureUserState(state.currentUser);
         return;
     }
 
     // if we don't have saved data create user and dummy accounts
     state.users = {
         "main_user": createUserTemplate(),
-        "dummy_alice": createUserTemplate(),
-        "dummy_bob": createUserTemplate(),
-        "dummy_charlie": createUserTemplate()
+        ...getDummyUsers()
     };
 
-    if (state.users["dummy_alice"]) state.users["dummy_alice"].favoriteGames = ["Slots"];
-    if (state.users["dummy_bob"]) state.users["dummy_bob"].favoriteGames = ["Slots", "Coin Flip"];
-    if (state.users["dummy_charlie"]) state.users["dummy_charlie"].favoriteGames = ["Number Guesser", "Coin Flip"];
+    state.currentUser = "main_user";
+    state.users["main_user"].friends = ["dummy_alice", "dummy_bob", "dummy_charlie"];
 
     // state.friends = Array.isArray(nextState.friends) ? nextState.friends : [];
     // state.stats = {

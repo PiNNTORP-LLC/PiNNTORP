@@ -1,0 +1,1 @@
+{"nextPlayerID":3,"users":[{"playerID":1,"username":"abc","passwordHash":"123","balance":0.0,"friends":[2],"receivedFriendRequests":[],"sentFriendRequests":[]},{"playerID":2,"username":"def","passwordHash":"456","balance":0.0,"friends":[1],"receivedFriendRequests":[],"sentFriendRequests":[]}]}

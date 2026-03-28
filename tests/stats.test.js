@@ -93,6 +93,7 @@ test("resetStats zeros everything out and keeps the friend list", () => {
         losses: 0,
         profit: 0,
         friends: ["dummy_charlie"],
-        favoriteGames: []
+        favoriteGames: [],
+        history: []
     });
 });

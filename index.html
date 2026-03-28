@@ -24,6 +24,28 @@
         </div>
     </header>
 
+    <section id="auth-panel" class="auth-panel">
+        <div id="login-container" class="auth-form-wrap">
+            <h2 class="auth-title">Welcome Back</h2>
+            <form id="login-form" class="auth-form">
+                <input name="username" type="text" placeholder="Username" required class="auth-input">
+                <input name="password" type="password" placeholder="Password" required class="auth-input">
+                <button type="submit" class="auth-submit-btn">Log In</button>
+            </form>
+            <p class="auth-toggle">No account? <button type="button" id="go-to-signup" class="auth-link-btn">Sign Up</button></p>
+        </div>
+        <div id="register-container" class="auth-form-wrap auth-panel-hidden">
+            <h2 class="auth-title">Create Account</h2>
+            <form id="register-form" class="auth-form">
+                <input name="username" type="text" placeholder="Username" required class="auth-input">
+                <input name="password" type="password" placeholder="Password" required class="auth-input">
+                <button type="submit" class="auth-submit-btn">Sign Up</button>
+            </form>
+            <p class="auth-toggle">Have an account? <button type="button" id="go-to-login" class="auth-link-btn">Log In</button></p>
+        </div>
+        <p id="auth-message" class="auth-message"></p>
+    </section>
+
     <main class="layout">
         <div class="column">
             <section>
@@ -34,7 +56,7 @@
 
             <section>
                 <h2>Quick Links</h2>
-                <p>Open the Games tab to play Slots, Dice Roll, or Coin Flip.</p>
+                <p>Log in or sign up above to access Games and your Profile.</p>
                 <p>Open Friends to manage your list and improve recommendations.</p>
             </section>
         </div>

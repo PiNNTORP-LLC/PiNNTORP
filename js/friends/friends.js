@@ -19,7 +19,7 @@ export function addFriend(name) {
 
     if (currentFriends.some((f) => f.toLowerCase() === value.toLowerCase())) return false;
 
-    currentFriends.push(value);
+    state.users[state.currentUser].friends = [...currentFriends, value];
     saveState(state);
     return true;
 }
