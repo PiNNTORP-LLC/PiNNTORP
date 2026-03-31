@@ -113,8 +113,10 @@ public class ConnectionHandler extends Thread {
                     com.pinntorp.WebSockets.Message msg = ws.receive();
                     if (msg != null && msg.getOpcode() == 1) {
                         Console.log("[WS] Received: " + msg.getString());
+                        com.pinntorp.Server.Api.Blackjack.Lobby.handleMessage(ws, msg.getString());
                     }
                 }
+                com.pinntorp.Server.Api.Blackjack.Lobby.handleDisconnect(ws);
                 return;
             }
 
