@@ -378,57 +378,53 @@ export function initBlackjackView() {
 
     setPhase("idle");
 
+    blackjackApi.setMessageHandler((msg) => {
+        if (msg.type === "TIMER_UPDATE" || msg.type === "STATE_UPDATE" || msg.type === "ROUND_COMPLETE") {
+            resultEl.textContent = msg.message;
+        } else if (msg.type === "TURN_UPDATE") {
+            if (msg.currentPlayer === getStats()?.username) {
+                setPhase("playing");
+                resultEl.textContent = "It's your turn! Hit or Stand.";
+            } else {
+                setPhase("idle");
+                resultEl.textContent = `Waiting for ${msg.currentPlayer}...`;
+            }
+        } else if (msg.type === "TABLE_STATE") {
+            if (msg.dealer && msg.dealer.cards) {
+                renderHand(dealerHandEl, msg.dealer.cards);
+                dealerTotalEl.textContent = msg.dealer.total;
+            }
+            if (msg.players) {
+                const me = msg.players.find(p => p.username === getStats()?.username);
+                if (me && me.cards) {
+                    renderHand(playerHandEl, me.cards);
+                    playerTotalEl.textContent = me.total;
+                }
+            }
+        } else if (msg.type === "JOINED_TABLE") {
+            resultEl.textContent = msg.message;
+        }
+    });
+
+    // Automatically establish the multiplayer tunnel when Blackjack mounts
+    blackjackApi.connectMultiplayer();
+
     dealBtn.addEventListener("click", async () => {
         if (bet > getStats().balance) {
             resultEl.textContent = "Insufficient funds!";
             return;
         }
-        resultEl.textContent = "";
-        const round = await blackjackApi.deal(bet);
-        renderHand(playerHandEl, round.playerHand);
-        renderHand(dealerHandEl, round.dealerHand, true);
-        playerTotalEl.textContent = round.playerTotal;
-        dealerTotalEl.textContent = "?";
-
-        if (round.isBlackjack) {
-            const final = await blackjackApi.resolveBlackjack();
-            renderHand(dealerHandEl, final.dealerHand);
-            dealerTotalEl.textContent = final.dealerTotal;
-            resultEl.textContent = `♠ Blackjack! You win $${final.payout}!`;
-            setPhase("idle");
-            renderStats();
-            renderHistory();
-            renderRec();
-        } else {
-            setPhase("playing");
-        }
+        blackjackApi.sendBet(bet);
+        resultEl.textContent = "Bet locked! Waiting for timer...";
+        setPhase("idle"); // Hide controls to prevent re-betting
     });
 
     hitBtn.addEventListener("click", async () => {
-        const round = await blackjackApi.hit();
-        renderHand(playerHandEl, round.playerHand);
-        playerTotalEl.textContent = round.playerTotal;
-        if (round.bust) {
-            renderHand(dealerHandEl, round.dealerHand);
-            dealerTotalEl.textContent = round.dealerTotal;
-            resultEl.textContent = `Bust! You had ${round.playerTotal}.`;
-            setPhase("idle");
-            renderStats();
-            renderHistory();
-            renderRec();
-        }
+        blackjackApi.sendHit();
     });
 
     standBtn.addEventListener("click", async () => {
-        const final = await blackjackApi.stand();
-        renderHand(playerHandEl, final.playerHand);
-        renderHand(dealerHandEl, final.dealerHand);
-        playerTotalEl.textContent = final.playerTotal;
-        dealerTotalEl.textContent = final.dealerTotal;
-        const msg = { win: `You win! +$${final.delta}`, loss: `Dealer wins. -$${Math.abs(final.delta)}`, push: "Push — it's a tie." };
-        resultEl.textContent = msg[final.outcome];
+        blackjackApi.sendStand();
         setPhase("idle");
-        renderStats();
-        renderRec();
-    });
+});
 }
