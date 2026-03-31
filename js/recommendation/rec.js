@@ -1,5 +1,11 @@
 import { state } from "../core/state.js";
 
+/**
+* MODULE: Recommendations (rec.js)
+*-------------------------------------------------------
+* Purpose: The algorithm calculates which games to recommend based on friend activity
+*/
+
 // Games that share the same panel must share a canonical key so they
 // aren't counted as separate recommendations.
 const ALIASES = {

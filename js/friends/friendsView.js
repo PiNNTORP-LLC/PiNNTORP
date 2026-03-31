@@ -4,6 +4,13 @@ import { renderRec } from "../recommendation/recView.js";
 import { state } from "../core/state.js";
 import { saveState } from "../core/storage.js";
 
+/*
+* MODULE: Friends List Logic (friendsView.js)
+*-------------------------------------------------------
+* Purpose: Initialize the view for the users friends list
+* UI logic for rendering the friends list and handling the add/remove buttons
+*/
+
 const FRIENDS_API = "http://localhost:5500";
 const DUMMY_USERS = ["dummy_alice", "dummy_bob", "dummy_charlie"];
 

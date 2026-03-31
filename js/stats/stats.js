@@ -1,6 +1,12 @@
 import { state } from "../core/state.js";
 import { saveState } from "../core/storage.js";
 
+/**
+* MODULE: Statistics (stats.js)
+*-------------------------------------------------------
+* Purpose: Calculates the user's balance, profit, games played, and the win/loss ratio
+*/
+
 export function getStats() {
     const user = state.users[state.currentUser];
     const { balance, wins, losses, gamesPlayed, profit } = user;

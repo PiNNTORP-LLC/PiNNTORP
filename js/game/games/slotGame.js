@@ -3,6 +3,13 @@ import { saveState } from "../../core/storage.js";
 import { logResult } from "../../stats/stats.js";
 import { getAuthHeaders, hasBackendSession, requestJson } from "../../core/network.js";
 
+/**
+* MODULE: Games (slotGames.js)
+*-------------------------------------------------------
+* Purpose: Implement Slot Machine logic
+* Implement Helper functions to chekc if any of the 3 numbers match
+*/
+
 // helper functions for checking values of slot numbers
 function twoOutOfThreeMatch(num1, num2, num3) {
     if (num1 == num2 || num1 == num3 || num2 == num3) {

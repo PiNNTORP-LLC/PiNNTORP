@@ -2,6 +2,13 @@ import { getGameApi } from "./game.js";
 import { renderStats, renderHistory } from "../stats/statsView.js";
 import { renderRec } from "../recommendation/recView.js";
 
+/**
+* MODULE: Games (gameView.js)
+*-------------------------------------------------------
+* Purpose: Initializes the UI for each game
+* Handles animations for each game
+*/
+
 const diceGameApi = getGameApi("dice");
 const slotGameApi = getGameApi("slots");
 const coinFlipApi = getGameApi("coinFlip");

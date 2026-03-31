@@ -2,6 +2,12 @@ import { state } from "../../core/state.js";
 import { saveState } from "../../core/storage.js";
 import { logResult } from "../../stats/stats.js";
 
+/**
+* MODULE: Games (coinFlip.js)
+*-------------------------------------------------------
+* Purpose: Implement a standard game of coin flip logic
+*/
+
 function flipCoin(guess) {
     const result = Math.random() >= 0.5 ? "Heads" : "Tails";
     const won = guess === result;

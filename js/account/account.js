@@ -1,3 +1,10 @@
+/**
+* MODULE: Account Managment (account.js)
+*-------------------------------------------------------
+* Purpose: Handles the account deletion
+* Initializes comfirmation prompts
+*/
+
 export function deleteCurrentAccount() {
     throw new Error("Account deletion is not implemented yet.");
 }
