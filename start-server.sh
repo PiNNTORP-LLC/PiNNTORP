@@ -12,10 +12,9 @@ echo "   PiNNTORP Unified Server Startup"
 echo "=========================================="
 echo ""
 
-# Check if port 8080 is in use and kill it
-if lsof -Pi :$PORT -sTCP:LISTEN -t >/dev/null ; then
-    echo "Port $PORT is already in use. Killing the existing process..."
-    lsof -ti:$PORT | xargs kill -9
+# Check if port 8080 is in use and kill it aggressively
+if fuser -k $PORT/tcp >/dev/null 2>&1; then
+    echo "Port $PORT was in use. Process killed."
     sleep 1
 fi
 
