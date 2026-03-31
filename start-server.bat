@@ -24,9 +24,16 @@ if %ERRORLEVEL% neq 0 (
 set "PORT=8080"
 set "URL=http://localhost:%PORT%/"
 
+echo Checking for existing processes on port %PORT%...
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr :%PORT% ^| findstr LISTENING') do (
+    echo Killing process %%a...
+    taskkill /F /PID %%a /T >nul 2>nul
+)
+
 echo Compiling the game server (pinn-api)...
 pushd "%ROOT%\pinn-api"
-if not exist build mkdir build
+if exist build rmdir /s /q build
+mkdir build
 dir /s /B *.java > sources.txt
 javac -cp "lib/*;build" -d build @sources.txt
 set "JAVAC_EXIT=%ERRORLEVEL%"
