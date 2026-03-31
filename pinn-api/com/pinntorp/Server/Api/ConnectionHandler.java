@@ -370,6 +370,14 @@ public class ConnectionHandler extends Thread {
                     contentType = "application/javascript";
                 else if (path.endsWith(".css"))
                     contentType = "text/css";
+                else if (path.endsWith(".png"))
+                    contentType = "image/png";
+                else if (path.endsWith(".jpg") || path.endsWith(".jpeg"))
+                    contentType = "image/jpeg";
+                else if (path.endsWith(".svg"))
+                    contentType = "image/svg+xml";
+                else if (path.endsWith(".ico"))
+                    contentType = "image/x-icon";
 
                 long length = file.length();
                 String resHeader = "HTTP/1.1 200 OK\r\n" +
