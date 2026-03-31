@@ -1,6 +1,7 @@
 import { getGameApi } from "./game.js";
 import { renderStats, renderHistory } from "../stats/statsView.js";
 import { renderRec } from "../recommendation/recView.js";
+import { getStats } from "../stats/stats.js";
 
 /**
 * MODULE: Games (gameView.js)
@@ -341,7 +342,12 @@ export function initBlackjackView() {
     };
 
     betMinusBtn.addEventListener("click", () => { bet = Math.max(5, bet - 5); updateBetUI(); });
-    betPlusBtn.addEventListener("click", () => { bet += 5; updateBetUI(); });
+    betPlusBtn.addEventListener("click", () => { 
+        if (bet + 5 <= getStats().balance) {
+            bet += 5; 
+        }
+        updateBetUI(); 
+    });
     updateBetUI();
 
     function makeCard(card, faceDown = false, delay = 0) {
@@ -373,6 +379,10 @@ export function initBlackjackView() {
     setPhase("idle");
 
     dealBtn.addEventListener("click", async () => {
+        if (bet > getStats().balance) {
+            resultEl.textContent = "Insufficient funds!";
+            return;
+        }
         resultEl.textContent = "";
         const round = await blackjackApi.deal(bet);
         renderHand(playerHandEl, round.playerHand);
