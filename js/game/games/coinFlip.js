@@ -1,5 +1,12 @@
 import { state } from "../../core/state.js";
 import { saveState } from "../../core/storage.js";
+import { logResult } from "../../stats/stats.js";
+
+/**
+* MODULE: Games (coinFlip.js)
+*-------------------------------------------------------
+* Purpose: Implement a standard game of coin flip logic
+*/
 
 function flipCoin(guess) {
     const result = Math.random() >= 0.5 ? "Heads" : "Tails";
@@ -11,10 +18,12 @@ function flipCoin(guess) {
         user.wins += 1;
         user.balance += 10;
         user.profit += 10;
+        logResult("Coin Flip", 10);
     } else {
         user.losses += 1;
         user.balance -= 5;
         user.profit -= 5;
+        logResult("Coin Flip", -5);
     }
 
     saveState(state);

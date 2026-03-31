@@ -35,8 +35,7 @@ public class SessionManager
     public Session verifySession(String sessionID)
     {
         Session session = this.sessions.get(sessionID);
-        if(session == null) return null;
-        return this.sessions.get(sessionID).verify();
+        return session == null ? null : session.verify();
     }
 
     // Ends the specified session

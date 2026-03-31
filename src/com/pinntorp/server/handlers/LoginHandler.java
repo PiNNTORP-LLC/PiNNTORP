@@ -27,6 +27,18 @@ public class LoginHandler implements HttpHandler
     @Override
     public void handle(HttpExchange exchange) throws IOException
     {
+        // CORS headers required when frontend is served from a different port (e.g. 8080 vs 5500)
+        exchange.getResponseHeaders().set("Access-Control-Allow-Origin", "*");
+        exchange.getResponseHeaders().set("Access-Control-Allow-Methods", "POST, OPTIONS");
+        exchange.getResponseHeaders().set("Access-Control-Allow-Headers", "Content-Type");
+
+        // Handle preflight
+        if(exchange.getRequestMethod().equalsIgnoreCase("OPTIONS"))
+        {
+            exchange.sendResponseHeaders(204, -1);
+            return;
+        }
+
         try
         {
             // Check if the correct method was used
@@ -46,8 +58,8 @@ public class LoginHandler implements HttpHandler
 
             // Get the request parameters
             String action = request.get("action").getAsString();
-            String username = request.get("username").getAsString();
-            String password = request.get("password").getAsString();
+            String username = request.has("username") ? request.get("username").getAsString() : "";
+            String password = request.has("password") ? request.get("password").getAsString() : "";
 
             // Create the response
             JsonObject response = new JsonObject();
@@ -57,9 +69,18 @@ public class LoginHandler implements HttpHandler
             {
                 // Create new user and start session
                 int playerID = this.userStore.register(username, password);
-                String sessionID = this.sessionManager.startSession(playerID);
-                response.addProperty("sessionID", sessionID);
-                response.addProperty("success", true);
+                if(playerID != -1)
+                {
+                    this.userStore.saveUsers();
+                    String sessionID = this.sessionManager.startSession(playerID);
+                    response.addProperty("sessionID", sessionID);
+                    response.addProperty("playerID", playerID);
+                    response.addProperty("success", true);
+                }
+                else
+                {
+                    response.addProperty("success", false);
+                }
             }
             else if(action.equals("login"))
             {
@@ -70,6 +91,7 @@ public class LoginHandler implements HttpHandler
                     // User logged in successfully, start session and add session ID to response
                     String sessionID = this.sessionManager.startSession(playerID);
                     response.addProperty("sessionID", sessionID);
+                    response.addProperty("playerID", playerID);
                 }
                 // Add success to response
                 response.addProperty("success", playerID != -1);

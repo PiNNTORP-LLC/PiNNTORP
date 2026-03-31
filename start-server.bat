@@ -1,71 +1,67 @@
 @echo off
-setlocal
+setlocal EnableExtensions
 
-REM Always run from the folder this script lives in (repo root when committed there)
-pushd "%~dp0"
+set "ROOT=%~dp0"
+if "%ROOT:~-1%"=="\" set "ROOT=%ROOT:~0,-1%"
 
-set PORT=8080
-set URL=http://localhost:%PORT%/
+pushd "%ROOT%"
 
-echo Starting PiNNTORP in:
-echo %CD%
+echo.
+echo ==========================================
+echo    PiNNTORP Unified Server Startup
+echo ==========================================
 echo.
 
 where javac >nul 2>nul
-if %ERRORLEVEL%==0 (
-  where java >nul 2>nul
-  if %ERRORLEVEL%==0 (
-    echo Compiling the Java server...
-    cd pinn-api
-    if not exist build mkdir build
-    dir /s /B *.java > sources.txt
-    javac -cp "lib/*;build" -d build @sources.txt
-    if %ERRORLEVEL% neq 0 (
-      echo The Java compilation failed.
-      del sources.txt
-      goto :fallback
-    )
-    del sources.txt
-    start "" "%URL%"
-    echo Starting the unified HTTP and the WebSocket server on port %PORT%
-    set JAVA_CMD=java -cp "lib/*;build" com.pinntorp.Server.Main
-    %JAVA_CMD%
-    goto :end
-  )
+if %ERRORLEVEL% neq 0 (
+    echo.
+    echo ERROR: JDK (javac) not found on PATH.
+    echo Please install a JDK and ensure 'javac' and 'java' are in your PATH.
+    pause
+    exit /b 1
 )
 
-:fallback
-cd "%~dp0"
-set PORT=5500
-set URL=http://localhost:%PORT%/
+set "PORT=8080"
+set "URL=http://localhost:%PORT%/"
 
-where python >nul 2>nul
-if %ERRORLEVEL%==0 (
+echo Compiling the game server (pinn-api)...
+pushd "%ROOT%\pinn-api"
+if not exist build mkdir build
+dir /s /B *.java > sources.txt
+javac -cp "lib/*;build" -d build @sources.txt
+set "JAVAC_EXIT=%ERRORLEVEL%"
+del sources.txt >nul 2>nul
+
+if not "%JAVAC_EXIT%"=="0" (
+  echo.
+  echo ERROR: The pinn-api Java compilation failed.
+  popd
+  pause
+  exit /b 1
+)
+popd
+
+echo Launching the unified server (Web/API/Auth)...
+start "PiNNTORP Server" cmd /k "cd /d ""%ROOT%\pinn-api"" && java -cp ""lib/*;build"" com.pinntorp.Server.Main"
+
+echo Waiting for server to respond at %URL%...
+call :wait_for_http "%URL%" 15
+if %ERRORLEVEL% neq 0 (
+  echo.
+  echo WARNING: The server did not respond at %URL% in time.
+  echo Check the server console window for errors.
+) else (
+  echo.
+  echo Server is responding at %URL%
+  echo.
   start "" "%URL%"
-  echo The Java runtime is not available, using Python http.server on port %PORT%
-  python -m http.server %PORT%
-  goto :end
 )
 
-where py >nul 2>nul
-if %ERRORLEVEL%==0 (
-  start "" "%URL%"
-  echo The Java runtime is not available, using py launcher http.server on port %PORT%
-  py -m http.server %PORT%
-  goto :end
-)
+goto :end
 
-where npx >nul 2>nul
-if %ERRORLEVEL%==0 (
-  start "" "%URL%"
-  echo The Java runtime is not available, using npx serve on port %PORT%
-  npx serve . -l %PORT%
-  goto :end
-)
-
-echo.
-echo Could not find the Java, Python, or Node.js runtime on PATH.
-pause
+:wait_for_http
+powershell -NoProfile -Command "$deadline=(Get-Date).AddSeconds(%~2); while ((Get-Date) -lt $deadline) { try { $response = Invoke-WebRequest '%~1' -UseBasicParsing -TimeoutSec 2; if ($response.StatusCode -ge 200) { exit 0 } } catch { } Start-Sleep -Milliseconds 500 }; exit 1" >nul 2>nul
+exit /b %ERRORLEVEL%
 
 :end
 popd

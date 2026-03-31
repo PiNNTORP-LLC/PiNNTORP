@@ -2,6 +2,7 @@ package com.pinntorp.server;
 
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
@@ -51,20 +52,36 @@ public class UserStore
     }
 
     /**
-     * Loads users from the "users.dat" file into the users hashmap.
+     * Loads users from the user file into the users hashmap.
+     * Creates an empty file if none exists yet.
      */
     public synchronized void loadUsers()
     {
+        java.io.File file = new java.io.File(this.userFilePath);
+
+        if(!file.exists())
+        {
+            Console.log("UserStore", "No user file found at " + this.userFilePath + ". Starting with an empty user store.");
+            saveUsers(); // write the empty structure so the file exists for next time
+            return;
+        }
+
         try
         {
-            FileReader reader = new FileReader(this.userFilePath);
+            FileReader reader = new FileReader(file);
             UserFile data = Json.GSON.fromJson(reader, UserFile.class);
+            reader.close();
+
+            if(data == null || data.users == null)
+            {
+                return;
+            }
 
             nextPlayerID.set(data.nextPlayerID);
             users.clear();
             for(UserFileEntry u : data.users)
             {
-                users.put(u.playerID, new User(u.username, u.passwordHash, u.balance, u.friends, u.sentFriendRequests, u.receivedFriendRequests));
+                users.put(u.playerID, new User(u.username, u.passwordHash, u.balance, u.friends, u.receivedFriendRequests, u.sentFriendRequests));
             }
         }
         catch(Exception e)
@@ -80,9 +97,10 @@ public class UserStore
     {
         try
         {
-            FileWriter writer = new FileWriter("./users.json");
+            FileWriter writer = new FileWriter(this.userFilePath);
             UserFile data = new UserFile();
             data.nextPlayerID = this.nextPlayerID.get();
+            data.users = new ArrayList<>();
             this.users.forEach((Integer playerID, User user) -> {
                 data.users.add(new UserFileEntry(playerID, user));
             });
@@ -102,6 +120,11 @@ public class UserStore
 
     public int register(String username, String password)
     {
+        if(this.findByUsername(username) != -1)
+        {
+            return -1;
+        }
+
         int id = this.nextPlayerID.getAndIncrement();
         this.users.put(id, new User(username, password));
         return id;
@@ -115,6 +138,21 @@ public class UserStore
             int id = IDlist.nextElement();
             User user = this.users.get(id);
             if(user.getUsername().equals(username) && user.getPassword().equals(password))
+            {
+                return id;
+            }
+        }
+        return -1;
+    }
+
+    public int findByUsername(String username)
+    {
+        Enumeration<Integer> IDlist = this.users.keys();
+        while(IDlist.hasMoreElements())
+        {
+            int id = IDlist.nextElement();
+            User user = this.users.get(id);
+            if(user.getUsername().equals(username))
             {
                 return id;
             }
@@ -137,44 +175,10 @@ public class UserStore
 
     public boolean acceptFriendRequest(int playerID, int friendID)
     {
-        User player = this.users.get(playerID);
-        User newFriend = this.users.get(friendID);
-        if(player.acceptFriendRequest(friendID))
-        {
-            newFriend.cancelFriendRequest(playerID);
-            return true;
-        }
-        return false;
-    }
-
-    public boolean declineFriendRequest(int playerID, int friendID)
-    {
-        User player = this.users.get(playerID);
-        User pendingFriend = this.users.get(friendID);
-        if(player.declineFriendRequest(friendID))
-        {
-            pendingFriend.cancelFriendRequest(playerID);
-            return true;
-        }
-        return false;
-    }
-
-    public boolean cancelFriendRequest(int playerID, int friendID)
-    {
-        User player = this.users.get(playerID);
-        User pendingFriend = this.users.get(friendID);
-        if(player.cancelFriendRequest(friendID))
-        {
-            pendingFriend.declineFriendRequest(playerID);
-            return true;
-        }
-        return false;
-    }
-
-    public boolean removeFriend(int playerID, int friendID)
-    {
-        User player = this.users.get(playerID);
-        User oldFriend = this.users.get(friendID);
-        return player.removeFriend(friendID) && oldFriend.removeFriend(playerID);
+        User sender = this.users.get(playerID);
+        User receiver = this.users.get(friendID);
+        sender.acceptFriendRequest(friendID);
+        receiver.cancelFriendRequest(playerID);
+        return true;
     }
 }

@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>PiNNTORP</title>
-    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="icon" type="image/png" href="resources/images/icon.png">
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -28,18 +28,31 @@
         <div class="column">
             <section>
                 <h2>Friends</h2>
-                <form id="friend-form">
-                    <input id="friend-name" type="text" placeholder="Friend name" required>
-                    <button type="submit">Add</button>
+                <form id="friend-form" class="friend-search-form">
+                    <input id="friend-name" type="text" placeholder="Username" required>
+                    <button type="submit">Send Request</button>
                 </form>
+                <p id="friend-status" class="friend-status"></p>
                 <ul id="friends-list"></ul>
             </section>
         </div>
 
         <div class="column">
+            <section id="friend-requests-section" class="hidden">
+                <h2>Requests</h2>
+                <div class="request-group">
+                    <h3 class="request-group-label">Received</h3>
+                    <ul id="received-requests-list"></ul>
+                </div>
+                <div class="request-group">
+                    <h3 class="request-group-label">Sent</h3>
+                    <ul id="sent-requests-list"></ul>
+                </div>
+            </section>
             <section>
                 <h2>How It Works</h2>
                 <p>Add friends by username to connect their favorite games with your recommendation feed.</p>
+                <p id="friend-offline-note" class="friend-status">Log in to send friend requests and sync with other players.</p>
             </section>
         </div>
     </main>

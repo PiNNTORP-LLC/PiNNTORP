@@ -1,62 +1,20 @@
 package com.pinntorp.server;
 
-import javax.swing.*;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * This class implements the central console adapter that allows all threads to concurrently write
- * to the internal message buffer that gets consumed and rendered by the ConsolePanel Swing GUI.
+ * This class implements a simple wrapper for console logging.
  */
-public class Console
-{
-    private static final ConcurrentLinkedQueue<String> messageBuffer = new ConcurrentLinkedQueue<>();
-    private static final AtomicBoolean flushScheduled = new AtomicBoolean(false);
-    private static final AtomicReference<Runnable> flushFunction = new AtomicReference<>(null);
+public class Console {
 
-    /**
-     * Set the flush function to the provided method.
-     */
-    public static void setFlushFunction(Runnable flushFunc)
-    {
-        flushFunction.set(flushFunc);
+    public static void log(String message) {
+        String timestamp = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+        System.out.println("[" + timestamp + "] " + message);
     }
 
-    /**
-     * Mark the buffer as flushed.
-     */
-    public static void markAsFlushed()
-    {
-        // Set flushRequested to false
-        flushScheduled.set(true);
-    }
-
-    /**
-     * Log a string message to the console.
-     * @param message   the message to write
-     */
-    public static void log(String source, String message)
-    {
-        messageBuffer.add(LocalTime.now().format(DateTimeFormatter.ofPattern("hh:mm:ss a")) + " [" + source + "] " + message);
-
-        // Flush if flush not scheduled and flush function is set
-        Runnable flusher = flushFunction.get();
-        if(flusher != null && flushScheduled.compareAndSet(false, true))
-        {
-            SwingUtilities.invokeLater(flusher);
-        }
-    }
-
-    /**
-     * Get the next available console line, or return null if there are none left to consume
-     * @return  the retrieved message
-     */
-    public static String poll()
-    {
-        // Return the message
-        return messageBuffer.poll();
+    public static void log(String source, String message) {
+        String timestamp = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+        System.out.println("[" + timestamp + "] [" + source + "] " + message);
     }
 }

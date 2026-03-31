@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>PiNNTORP</title>
-    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="icon" type="image/png" href="resources/images/icon.png">
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -24,21 +24,35 @@
         </div>
     </header>
 
-    <main class="layout">
-        <div class="column">
-            <section>
-                <h2>Profile</h2>
-                <p>Your current play history and performance are tracked below.</p>
-            </section>
+    <main>
+        <div class="layout">
+            <div class="column">
+                <section>
+                    <h2>Profile</h2>
+                    <p>Your current play history and performance are tracked below.</p>
+                </section>
+            </div>
+
+            <div class="column">
+                <section>
+                    <h2>Stats</h2>
+                    <div id="stats-view"></div>
+                    <button id="reset-stats" type="button">Reset</button>
+                </section>
+
+                <section class="danger-zone">
+                    <h2>Delete My Account</h2>
+                    <p>This permanently removes your account data. You will be asked to confirm before anything happens.</p>
+                    <button id="delete-account-btn" type="button" class="danger-btn">Delete My Account</button>
+                    <p id="delete-account-message" class="danger-message" aria-live="polite"></p>
+                </section>
+            </div>
         </div>
 
-        <div class="column">
-            <section>
-                <h2>Stats</h2>
-                <div id="stats-view"></div>
-                <button id="reset-stats" type="button">Reset</button>
-            </section>
-        </div>
+        <section class="history-section">
+            <h2>Game History</h2>
+            <div id="history-list" class="history-list"></div>
+        </section>
     </main>
 
     <script type="module" src="js/app.js"></script>

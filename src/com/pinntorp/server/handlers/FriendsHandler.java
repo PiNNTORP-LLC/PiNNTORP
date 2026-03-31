@@ -1,15 +1,20 @@
 package com.pinntorp.server.handlers;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.pinntorp.server.*;
+import com.pinntorp.server.Console;
+import com.pinntorp.server.Json;
+import com.pinntorp.server.Session;
+import com.pinntorp.server.SessionManager;
+import com.pinntorp.server.User;
+import com.pinntorp.server.UserStore;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.LinkedList;
+import java.util.List;
 
 public class FriendsHandler implements HttpHandler
 {
@@ -22,119 +27,214 @@ public class FriendsHandler implements HttpHandler
         this.sessionManager = sessionManager;
     }
 
+    public class FriendsRequest
+    {
+        String action;          // the action to perform (add, remove, list, accept, decline, cancel, list-requests, find)
+        String sessionID;       // the session ID of the sender
+        int playerID;           // the player ID of the sender
+        int friendID;           // the player ID of the receiver
+        String targetUsername;  // username to search for (used by "find" action)
+    }
+
+    public class FriendsListEntry
+    {
+        FriendsListEntry(int playerID, String username)
+        {
+            this.playerID = playerID;
+            this.username = username;
+        }
+
+        int playerID;
+        String username;
+    }
+
+    public class FriendsListResponse
+    {
+        FriendsListResponse()
+        {
+            this.friends = new LinkedList<>();
+        }
+
+        List<FriendsListEntry> friends;
+    }
+
+    public class RequestListResponse
+    {
+        RequestListResponse()
+        {
+            this.sent = new LinkedList<>();
+            this.received = new LinkedList<>();
+        }
+
+        List<FriendsListEntry> sent;
+        List<FriendsListEntry> received;
+    }
+
     @Override
     public void handle(HttpExchange exchange) throws IOException
     {
+        // CORS headers required when frontend is served from a different port (e.g. 8080 vs 5500)
+        exchange.getResponseHeaders().set("Access-Control-Allow-Origin", "*");
+        exchange.getResponseHeaders().set("Access-Control-Allow-Methods", "POST, OPTIONS");
+        exchange.getResponseHeaders().set("Access-Control-Allow-Headers", "Content-Type");
+
+        // Handle preflight
+        if(exchange.getRequestMethod().equalsIgnoreCase("OPTIONS"))
+        {
+            exchange.sendResponseHeaders(204, -1);
+            return;
+        }
+
+        if(!exchange.getRequestMethod().equalsIgnoreCase("POST"))
+        {
+            exchange.sendResponseHeaders(405, -1);
+            Console.log("FriendsHandler", "There was an attempt to use \"" + exchange.getRequestMethod() + "\" on the \"/friends\" endpoint.");
+            return;
+        }
+
         try
         {
-            // Check if the correct method was used
-            if(!exchange.getRequestMethod().equalsIgnoreCase("POST"))
-            {
-                // Respond with HTTP error 405 Method Not Allowed if POST not used
-                exchange.sendResponseHeaders(405, -1);
-                Console.log("FriendsHandler", "There was an attempt to use \"" + exchange.getRequestMethod() + "\" on the /friends endpoint.");
-                exchange.close();
-                return;
-            }
-
-            // Parse request JSON
+            // Parse request JSON (body can only be read once)
             InputStreamReader reader = new InputStreamReader(exchange.getRequestBody());
-            JsonObject request = JsonParser.parseReader(reader).getAsJsonObject();
+            FriendsRequest request = Json.GSON.fromJson(reader, FriendsRequest.class);
             reader.close();
 
-            // Get the request parameters
-            String sessionID = request.get("sessionID").getAsString();
-            String action = request.get("action").getAsString();
-
-            // Create the response
-            JsonObject response = new JsonObject();
-
-            // Verify and get current session
-            Session session = this.sessionManager.verifySession(sessionID);
-            if(session == null)
+            // Verify session (skip for "find" since it only looks up a username)
+            if(!request.action.equals("find"))
             {
-                response.addProperty("error", "Invalid session ID");
-                response.addProperty("success", false);
+                Session session = this.sessionManager.verifySession(request.sessionID);
+                if(session == null || session.getPlayerID() != request.playerID)
+                {
+                    exchange.sendResponseHeaders(401, -1);
+                    Console.log("FriendsHandler", "Received request with invalid session from player ID " + request.playerID + ".");
+                    return;
+                }
+            }
+
+            // Get sender and receiver
+            User sender = this.userStore.getUser(request.playerID);
+            User receiver = this.userStore.getUser(request.friendID);
+
+            // Check request action
+            if(request.action.equals("add"))
+            {
+                // Add friend, send request
+                sender.sendFriendRequest(request.friendID);
+                receiver.receiveFriendRequest(request.playerID);
+                this.userStore.saveUsers();
+
+                // Respond with success
+                exchange.sendResponseHeaders(200, -1);
+                Console.log("FriendsHandler", "Player ID " + request.playerID + " sent friend request to player ID " + request.friendID + ".");
+            }
+            else if(request.action.equals("remove"))
+            {
+                // Remove friend, remove
+                sender.removeFriend(request.friendID);
+                receiver.removeFriend(request.playerID);
+                this.userStore.saveUsers();
+
+                // Respond with success
+                exchange.sendResponseHeaders(200, -1);
+                Console.log("FriendsHandler", "Player ID " + request.playerID + " removed player ID " + request.friendID + " from friends list.");
+            }
+            else if(request.action.equals("list-friends"))
+            {
+                // List friends, get all friends
+                FriendsListResponse response = new FriendsListResponse();
+                sender.getFriends().forEach((Integer friendID) -> {
+                    response.friends.add(new FriendsListEntry(friendID, this.userStore.getUser(friendID).getUsername()));
+                });
+
+                // Respond with friends list
                 exchange.getResponseHeaders().set("Content-Type", "application/json");
-                exchange.sendResponseHeaders(401, 0);
+                exchange.sendResponseHeaders(200, 0);
                 OutputStreamWriter writer = new OutputStreamWriter(exchange.getResponseBody());
                 Json.GSON.toJson(response, writer);
                 writer.close();
-                exchange.close();
-                return;
             }
+            else if(request.action.equals("accept"))
+            {
+                // Accept request, add to list
+                sender.acceptFriendRequest(request.friendID);  // Remove from received, add friend
+                receiver.cancelFriendRequest(request.playerID); // Remove from sent
+                receiver.addFriend(request.playerID);           // Add friend back
+                this.userStore.saveUsers();
 
-            // Check and perform requested action
-            if(action.equals("sendRequest"))
-            {
-                // Send friend request to specified user
-                int friendID = request.get("friendID").getAsInt();
-                response.addProperty("success", this.userStore.sendFriendRequest(session.getPlayerID(), friendID));
+                // Respond with success
+                exchange.sendResponseHeaders(200, -1);
+                Console.log("FriendsHandler", "Player ID " + request.playerID + " accepted friend request from player ID " + request.friendID);
             }
-            else if(action.equals("getRequests"))
+            else if(request.action.equals("decline"))
             {
-                // Get friend requests sent and received by specified user
-                User user = this.userStore.getUser(session.getPlayerID());
-                JsonElement sentRequests = Json.GSON.toJsonTree(user.getSentFriendRequests());
-                JsonElement receivedRequests = Json.GSON.toJsonTree(user.getReceivedFriendRequests());
-                response.add("sent", sentRequests);
-                response.add("received", receivedRequests);
-                response.addProperty("success", true);
+                // Decline request, don't add friend
+                sender.declineFriendRequest(request.friendID);  // Remove from received
+                receiver.cancelFriendRequest(request.playerID); // Remove from sent
+                this.userStore.saveUsers();
+
+                // Respond with success
+                exchange.sendResponseHeaders(200, -1);
+                Console.log("FriendsHandler", "Player ID " + request.playerID + " declined friend request from player ID " + request.friendID);
             }
-            else if(action.equals("acceptRequest"))
+            else if(request.action.equals("cancel"))
             {
-                // Accept friend request received from specified user
-                int friendID = request.get("friendID").getAsInt();
-                response.addProperty("success", this.userStore.acceptFriendRequest(session.getPlayerID(), friendID));
+                // Cancel request, don't add friend
+                sender.cancelFriendRequest(request.friendID);   // Remove from sent
+                receiver.declineFriendRequest(request.playerID);// Remove from received
+                this.userStore.saveUsers();
+
+                // Respond with success
+                exchange.sendResponseHeaders(200, -1);
+                Console.log("FriendsHandler", "Player ID " + request.playerID + " cancelled friend request sent to player ID " + request.friendID);
             }
-            else if(action.equals("declineRequest"))
+            else if(request.action.equals("list-requests"))
             {
-                // Decline friend request received from specified user
-                int friendID = request.get("friendID").getAsInt();
-                response.addProperty("success", this.userStore.declineFriendRequest(session.getPlayerID(), friendID));
+                // List friend requests, get all friend requests
+                RequestListResponse response = new RequestListResponse();
+                sender.getSentFriendRequests().forEach((Integer friendID) -> {
+                    response.sent.add(new FriendsListEntry(friendID, this.userStore.getUser(friendID).getUsername()));
+                });
+                sender.getReceivedFriendRequests().forEach((Integer friendID) -> {
+                    response.received.add(new FriendsListEntry(friendID, this.userStore.getUser(friendID).getUsername()));
+                });
+
+                // Respond with friend request list
+                exchange.getResponseHeaders().set("Content-Type", "application/json");
+                exchange.sendResponseHeaders(200, 0);
+                OutputStreamWriter writer = new OutputStreamWriter(exchange.getResponseBody());
+                Json.GSON.toJson(response, writer);
+                writer.close();
             }
-            else if(action.equals("cancelRequest"))
+            else if(request.action.equals("find"))
             {
-                // Cancel friend request sent to specified user
-                int friendID = request.get("friendID").getAsInt();
-                response.addProperty("success", this.userStore.cancelFriendRequest(session.getPlayerID(), friendID));
-            }
-            else if(action.equals("getFriends"))
-            {
-                // Get friends of specified user
-                User user = this.userStore.getUser(session.getPlayerID());
-                JsonElement friendsList = Json.GSON.toJsonTree(user.getFriends());
-                response.add("friends", friendsList);
-                response.addProperty("success", true);
-            }
-            else if(action.equals("removeFriend"))
-            {
-                // Remove friend from specified user's friends list
-                int friendID = request.get("friendID").getAsInt();
-                request.addProperty("success", this.userStore.removeFriend(session.getPlayerID(), friendID));
+                // Find a user by username — used by the frontend to resolve username → playerID
+                int foundID = this.userStore.findByUsername(request.targetUsername != null ? request.targetUsername : "");
+                JsonObject findResponse = new JsonObject();
+                if(foundID != -1)
+                {
+                    findResponse.addProperty("found", true);
+                    findResponse.addProperty("playerID", foundID);
+                    findResponse.addProperty("username", request.targetUsername);
+                }
+                else
+                {
+                    findResponse.addProperty("found", false);
+                }
+
+                exchange.getResponseHeaders().set("Content-Type", "application/json");
+                exchange.sendResponseHeaders(200, 0);
+                OutputStreamWriter writer = new OutputStreamWriter(exchange.getResponseBody());
+                Json.GSON.toJson(findResponse, writer);
+                writer.close();
             }
             else
             {
-                // Unsupported action, respond with failure
-                exchange.getResponseHeaders().set("Content-Type", "application/json");
-                exchange.sendResponseHeaders(400, 0);
-                response.addProperty("error", "Unsupported action requested.");
-                response.addProperty("success", false);
-                OutputStreamWriter writer = new OutputStreamWriter(exchange.getResponseBody());
-                Json.GSON.toJson(response, writer);
-                writer.close();
-                exchange.close();
-                Console.log("FriendsHandler", "Unsupported action \"" + action + "\" requested.");
-                return;
+                // Respond with unsupported action
+                exchange.sendResponseHeaders(400, -1);
+                Console.log("FriendsHandler", "Unsupported action \"" + request.action + "\" requested.");
             }
 
-            // Response
-            exchange.getResponseHeaders().set("Content-Type", "application/json");
-            exchange.sendResponseHeaders(200, 0);
-            OutputStreamWriter writer = new OutputStreamWriter(exchange.getResponseBody());
-            Json.GSON.toJson(response, writer);
-            writer.close();
-            exchange.close();
+            // Session extension omitted (handled by session manager TTL)
         }
         catch(Exception e)
         {

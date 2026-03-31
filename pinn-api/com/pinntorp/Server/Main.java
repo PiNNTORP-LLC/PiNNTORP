@@ -16,7 +16,8 @@ public class Main {
         Env.load(webRoot);
 
         try {
-            port = Integer.parseInt(Env.get("PORT", "8080"));
+            String portEnv = Env.get("PORT", "8080");
+            port = Integer.parseInt(portEnv);
         } catch (NumberFormatException e) {
             Console.log("Notice: Invalid PORT in .env, defaulting to 8080");
         }
@@ -24,16 +25,23 @@ public class Main {
         try {
             Console.log("Starting unified HTTP & WebSocket server on port " + port + "...");
             Database.load();
-            WebSocketServer nextServer = new WebSocketServer(port, webRoot);
-            server = nextServer;
+
+            server = new WebSocketServer(port, webRoot);
             server.start();
+
             Console.log("Server is running at http://localhost:" + port + "/");
+            Console.log("- View website at: http://localhost:" + port + "/");
+            Console.log("- Test HTTP API:   http://localhost:" + port + "/api/state");
+            Console.log("- WebSocket URL:   ws://localhost:" + port + "/");
         } catch (Exception e) {
             Console.log("Failed to start server: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
+    /**
+     * Cleans up resources that need it.
+     */
     public static void clean() {
         if (server != null) {
             server.requestStop();

@@ -1,6 +1,13 @@
 import { state } from "../../core/state.js";
 import { saveState } from "../../core/storage.js";
+import { logResult } from "../../stats/stats.js";
 import { getAuthHeaders, hasBackendSession, requestJson } from "../../core/network.js";
+
+/**
+* MODULE: Games (diceRoll.js)
+*-------------------------------------------------------
+* Purpose: implement a dice roll game logic where the user has to guess the number on the dice before the roll
+*/
 
 // for now using the assumption that the user makes a $5 bet
 async function rollDice(guess) {
@@ -15,11 +22,12 @@ async function rollDice(guess) {
             });
 
             if (user && round.stats) {
-                user.gamesPlayed = round.stats.gamesPlayed;
-                user.wins = round.stats.wins;
-                user.losses = round.stats.losses;
-                user.profit = round.stats.profit;
-                user.balance = round.stats.balance;
+                user.gamesPlayed += 1;
+                if (round.won) user.wins += 1;
+                else user.losses += 1;
+                user.profit += round.profit;
+                user.balance += round.profit;
+                logResult("Dice Roll", round.profit);
             }
 
             saveState(state);
@@ -39,10 +47,12 @@ async function rollDice(guess) {
         user.wins += 1;
         user.balance += 10;
         user.profit += 10;
+        logResult("Dice Roll", 10);
     } else {
         user.losses += 1;
         user.balance -= 5;
         user.profit -= 5;
+        logResult("Dice Roll", -5);
     }
 
     saveState(state);

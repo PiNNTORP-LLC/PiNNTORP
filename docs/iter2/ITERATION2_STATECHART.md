@@ -1,49 +1,54 @@
-# WebSocket Statechart Diagram
+# WebSocket Statechart Diagram (Iteration 2)
 
-The following diagram represents the lifecycle and operational states of the `WebSocket.java` class, including handshaking, active communication, and connection termination processes.
+The following diagram represents the lifecycle and operational states of the `WebSocket.java` class with concise transitions.
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Handshaking: Constructor(Socket)
+    [*] --> Handshaking: New WebSocket
     
     state Handshaking {
-        [*] --> ReadHeaders
-        ReadHeaders --> ValidatingHeaders
-        ValidatingHeaders --> SendingResponse: Headers Valid
-        ValidatingHeaders --> [*]: Headers Invalid
+        [*] --> CheckHeaders: Get Key
+        
+        state HandshakeSuccess <<choice>>
+        CheckHeaders --> GeneratingAccept: Key OK
+        CheckHeaders --> HandshakeFailed: Key Missing
+        
+        GeneratingAccept --> SendingResponse: SHA-1/Base64
+        SendingResponse --> HandshakeSuccess: Write 101 Response
     }
     
-    Handshaking --> Open: Handshake Complete</br>(open = true)
-    Handshaking --> Closed: Handshake Failed</br>(close() called)
+    HandshakeSuccess --> Open: open = true
+    HandshakeFailed --> Closed: Handshake Fail
     
     state Open {
         [*] --> Idle
-        Idle --> Receiving: receive() called
-        Receiving --> Idle: Frame Received</br>(opcode != 8)
+        Idle --> Receiving: receive()
+        Receiving --> Idle: Data Opcode
         
-        Idle --> Sending: send() called
-        Sending --> Idle: Data Sent
+        Idle --> Sending: send()
+        Sending --> Idle: Write Frame
     }
     
-    Open --> Closing_ClientInitiated: Receive Close Frame</br>(opcode 8)
+    Open --> Closing_ClientInitiated: Recv Opcode 8
     Open --> Closing_ServerInitiated: close() called
     
     state Closing_ClientInitiated {
-        [*] --> SendCloseResponse: Send Status 1000
-        SendCloseResponse --> [*]
+        [*] --> SendCloseResponse: Send Opcode 8
+        SendCloseResponse --> ClientCloseComplete
     }
     
     state Closing_ServerInitiated {
-        [*] --> SendCloseRequest: Send Status 1000
-        SendCloseRequest --> WaitConfirmation: receive() loop
-        WaitConfirmation --> [*]: Recv Close Frame</br>(opcode 8)
+        [*] --> SendCloseRequest: Send Opcode 8
+        SendCloseRequest --> WaitConfirmation: Await Opcode 8
+        WaitConfirmation --> ServerCloseComplete: Recv Opcode 8
     }
     
-    Closing_ClientInitiated --> Closed: Finish Close
-    Closing_ServerInitiated --> Closed: Finish Close
+    ClientCloseComplete --> Closed: Finalize
+    ServerCloseComplete --> Closed: Finalize
     
     state Closed {
-        [*] --> CloseSocket: socket.close()</br>(open = false)
+        [*] --> Terminate: open = false
+        Terminate --> CloseSocket: socket.close()
         CloseSocket --> [*]
     }
 
