@@ -32,7 +32,8 @@ async function playSlotRound() {
                 user.wins = round.stats.wins;
                 user.losses = round.stats.losses;
                 user.profit = round.stats.profit;
-                user.balance = round.stats.balance;
+                user.balance = 100 + (round.stats.profit || 0);
+                logResult("Slots", round.profit);
             }
 
             saveState(state);

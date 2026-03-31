@@ -26,7 +26,8 @@ async function rollDice(guess) {
                 user.wins = round.stats.wins;
                 user.losses = round.stats.losses;
                 user.profit = round.stats.profit;
-                user.balance = round.stats.balance;
+                user.balance = 100 + (round.stats.profit || 0);
+                logResult("Dice Roll", round.profit);
             }
 
             saveState(state);
