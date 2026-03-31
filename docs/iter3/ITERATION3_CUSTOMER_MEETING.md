@@ -39,7 +39,7 @@
 | UT-06 | `stats.js` | Stats start at zero for a new user | CB |
 | UT-07 | `stats.js` | Resetting stats sets all values to zero | CB |
 | UT-08 | `rec.js` | A friend's favourite game appears in recommendations | CB |
-| UT-09 | `rec.js` | The user's own favourite game is not recommended to themselves | CB |
+| UT-09 | `rec.js` | The user's own favourite game is recommended to themselves | CB |
 | UT-10 | `account.js` | Deleting an account removes it from storage | CB |
 | UT-11 | `account.js` | Deleting an account removes the user from all friend lists | CB |
 | UT-12 | `account.js` | Deleting an account that does not exist returns an error | CB |
