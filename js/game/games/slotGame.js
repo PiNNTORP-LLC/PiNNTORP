@@ -28,11 +28,11 @@ async function playSlotRound() {
             });
 
             if (user && round.stats) {
-                user.gamesPlayed = round.stats.gamesPlayed;
-                user.wins = round.stats.wins;
-                user.losses = round.stats.losses;
-                user.profit = round.stats.profit;
-                user.balance = 100 + (round.stats.profit || 0);
+                user.gamesPlayed += 1;
+                if (round.profit > 0) user.wins += 1;
+                else user.losses += 1;
+                user.profit += round.profit;
+                user.balance += round.profit;
                 logResult("Slots", round.profit);
             }
 
