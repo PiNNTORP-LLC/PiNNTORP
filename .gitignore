@@ -143,7 +143,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.py
-
 # Java compiled files
 *.class
 pinn-api/build/

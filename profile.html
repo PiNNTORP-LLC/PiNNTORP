@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PiNNTORP</title>
+    <link rel="icon" type="image/png" href="resources/images/icon.png">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header class="site-header">
+        <div>
+            <h1>PiNNTORP</h1>
+            <nav class="tab-nav" aria-label="Primary">
+                <a class="tab-link" href="index.html">Home</a>
+                <a class="tab-link" href="games.html">Games</a>
+                <a class="tab-link" href="friends.html">Friends</a>
+                <a class="tab-link is-active" href="profile.html">Profile</a>
+            </nav>
+        </div>
+        <div class="header-meta">
+            <div class="balance-chip">Balance: <span id="balance-value">$0</span></div>
+            <img class="site-icon" src="resources/images/icon.png" alt="PiNNTORP icon">
+        </div>
+    </header>
+
+    <main>
+        <div class="layout">
+            <div class="column">
+                <section>
+                    <h2>Profile</h2>
+                    <p>Your current play history and performance are tracked below.</p>
+                </section>
+            </div>
+
+            <div class="column">
+                <section>
+                    <h2>Stats</h2>
+                    <div id="stats-view"></div>
+                    <button id="reset-stats" type="button">Reset</button>
+                </section>
+
+                <section class="danger-zone">
+                    <h2>Delete My Account</h2>
+                    <p>This permanently removes your account data. You will be asked to confirm before anything happens.</p>
+                    <button id="delete-account-btn" type="button" class="danger-btn">Delete My Account</button>
+                    <p id="delete-account-message" class="danger-message" aria-live="polite"></p>
+                </section>
+            </div>
+        </div>
+
+        <section class="history-section">
+            <h2>Game History</h2>
+            <div id="history-list" class="history-list"></div>
+        </section>
+    </main>
+
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>

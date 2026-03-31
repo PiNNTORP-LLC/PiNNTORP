@@ -1,10 +1,21 @@
 import { state } from "../core/state.js";
 import { saveState } from "../core/storage.js";
 
+/*
+* MODULE: Friends List Logic (friends.js)
+*-------------------------------------------------------
+* Purpose: Handles the friends list logic for when the user adds and removes a friend
+*/
+
 export function getFriends() {
     return state.users[state.currentUser].friends;
 }
 
+/**
+ * Adds friend to the users friends list
+ * @param {string} name - Name of friend to add 
+ * @returns 
+ */
 export function addFriend(name) {
     const value = name.trim();
     if (!value) return false;
@@ -19,11 +30,16 @@ export function addFriend(name) {
 
     if (currentFriends.some((f) => f.toLowerCase() === value.toLowerCase())) return false;
 
-    currentFriends.push(value);
+    state.users[state.currentUser].friends = [...currentFriends, value];
     saveState(state);
     return true;
 }
 
+/**
+ * removes a friend from the users friends list
+ * @param {string} name 
+ * @returns 
+ */
 export function removeFriend(name) {
     const user = state.users[state.currentUser];
     const next = user.friends.filter((f) => f !== name);

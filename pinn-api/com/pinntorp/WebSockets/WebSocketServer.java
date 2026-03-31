@@ -18,16 +18,22 @@ public class WebSocketServer extends Thread {
      * Creates a unified server listening on a port.
      */
     public WebSocketServer(int port, String webRoot) throws IOException {
-        this.serverSocket = new ServerSocket(port);
         this.webRoot = webRoot;
+        this.serverSocket = new ServerSocket(port);
     }
 
     public void requestStop() {
         this.running = false;
+        try {
+            if (serverSocket != null)
+                serverSocket.close();
+        } catch (IOException ignored) {
+        }
     }
 
     @Override
     public void run() {
+        // Listening loop
         while (running) {
             try {
                 // Accept incoming connection
@@ -35,9 +41,10 @@ public class WebSocketServer extends Thread {
                 // Pass it to the smart HTTP/WebSocket router thread
                 new ConnectionHandler(clientTcp, webRoot).start();
             } catch (Exception e) {
-                System.out.println("Encountered " + e.getClass().getName()
-                        + " while trying to accept an incoming connection.\nTrace:\n" + e.getStackTrace()
-                        + "\nException:\n" + e);
+                if (running) {
+                    System.out.println("Encountered " + e.getClass().getName()
+                            + " while trying to accept an incoming connection.\nException:\n" + e);
+                }
             }
         }
     }

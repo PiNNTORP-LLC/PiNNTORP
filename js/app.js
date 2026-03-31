@@ -1,36 +1,54 @@
-import { initAuth } from "./core/auth.js";
-import { loadState } from "./core/storage.js";
-import { fetchState, replaceState } from "./core/state.js";
-import { initGameView } from "./game/gameView.js";
+import { initGameStage, initGameView, initSlotView, initCoinFlipView, initBlackjackView } from "./game/gameView.js";
+import { initAuthUI, isLoggedIn, getSession } from "./core/auth.js";
+import { initAccountView } from "./account/account.js";
 import { initFriendsView } from "./friends/friendsView.js";
-import { initStatsView, renderStats } from "./stats/statsView.js";
-import { initSlotView } from "./game/gameView.js";
-import { initNetwork } from "./core/network.js";
-import { initTabs } from "./core/tabs.js";
+import { initStatsView } from "./stats/statsView.js";
+import { initRecView } from "./recommendation/recView.js";
+import { ensureUserState, fetchRemoteState, replaceState, state } from "./core/state.js";
+import { loadState, saveState } from "./core/storage.js";
 
-// Always initialize authentication screens
-initAuth();
+/**
+* MODULE: Entry (app.js)
+*-------------------------------------------------------
+* Purpose: Initializes the application
+* Checks login status
+* Initilizes all the UIs
+*/
 
-// Only initialize the application runtime if logged in
-if (localStorage.getItem("jwt")) {
-    const ws = initNetwork();
+// Initialize auth UI on every page (header chip + form handlers)
+initAuthUI();
 
-    replaceState(loadState());
-
-    // Async IIFE to fetch state before initializing stats/game
-    (async () => {
-        const success = await fetchState();
-        if (!success) {
-            console.warn("Session invalid or user not found. Logging out.");
-            localStorage.removeItem("jwt");
-            window.location.reload();
-            return;
-        }
-
-        initTabs();
-        initSlotView();
-        initGameView();
-        initFriendsView();
-        initStatsView();
-    })();
+// Protect game and profile pages — redirect to home if not logged in
+const _page = window.location.pathname.split("/").pop() || "index.html";
+if ((_page === "games.html" || _page === "profile.html") && !isLoggedIn()) {
+    window.location.replace("index.html");
 }
+
+// Restore the last local snapshot first
+const saved = loadState();
+replaceState(saved);
+
+if (isLoggedIn()) {
+    const { username } = getSession();
+    if (username) {
+        state.currentUser = username;
+        ensureUserState(username);
+        saveState(state);
+    }
+}
+
+// Refresh state from the backend when a session is available
+if (isLoggedIn()) {
+    await fetchRemoteState();
+}
+
+// Initialize the current page features
+initGameStage();
+initSlotView();
+initGameView();
+initCoinFlipView();
+initBlackjackView();
+initFriendsView();
+initStatsView();
+initRecView();
+initAccountView();
