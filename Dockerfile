@@ -28,9 +28,10 @@ COPY --from=build /app/pinn-api/lib /app/pinn-api/lib
 
 # Copy static assets (index.html, css, js) from the root
 # The Java Main.java expects static assets to be at user.dir + "/.."
-COPY --from=build /app/index.html /app/index.html
+COPY --from=build /app/*.html /app/
 COPY --from=build /app/css /app/css
 COPY --from=build /app/js /app/js
+COPY --from=build /app/resources /app/resources
 
 # Set any environment variables
 ENV PORT=8080
