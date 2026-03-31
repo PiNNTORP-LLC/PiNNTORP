@@ -1,6 +1,12 @@
 const SESSION_API = "http://localhost:5500";
 const SESSION_TIMEOUT_MS = 3000;
 
+/**
+* MODULE: Core System (auth.js)
+*-------------------------------------------------------
+* Purpose: Handles Login, logout, and session tokens
+*/
+
 function makeAbortSignal(timeoutMs) {
     if (typeof AbortSignal !== "undefined" && typeof AbortSignal.timeout === "function") {
         return AbortSignal.timeout(timeoutMs);

@@ -1,6 +1,12 @@
 import { getRecommendedGames } from "./rec.js";
 import { isLoggedIn } from "../core/auth.js";
 
+/**
+* MODULE: Recommendations (recView.js)
+*-------------------------------------------------------
+* Purpose: UI Logic for displaying the recommended games
+*/
+
 
 const GAME_HASHES = {
     "slots": { hash: "slots-game", label: "Slots" },

@@ -2,6 +2,13 @@ import { state } from "../../core/state.js";
 import { saveState } from "../../core/storage.js";
 import { logResult } from "../../stats/stats.js";
 
+/**
+* MODULE: Games (blackJack.js)
+*-------------------------------------------------------
+* Purpose: Implement Black Jack card logic
+* Implement deck shuffling and payouts
+*/
+
 const SUITS = ["♠", "♣", "♥", "♦"];
 const VALUES = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
 

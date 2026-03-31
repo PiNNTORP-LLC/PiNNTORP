@@ -3,6 +3,12 @@ import { saveState } from "../../core/storage.js";
 import { logResult } from "../../stats/stats.js";
 import { getAuthHeaders, hasBackendSession, requestJson } from "../../core/network.js";
 
+/**
+* MODULE: Games (diceRoll.js)
+*-------------------------------------------------------
+* Purpose: implement a dice roll game logic where the user has to guess the number on the dice before the roll
+*/
+
 // for now using the assumption that the user makes a $5 bet
 async function rollDice(guess) {
     // Prefer the backend result when the user has a session

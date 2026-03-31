@@ -1,3 +1,11 @@
+/**
+* MODULE: Core System (state.js)
+*-------------------------------------------------------
+* Purpose: Manages the memory state of the application
+* Creates a template for every user
+* Creates dummy accounts
+*/
+
 function createUserTemplate() {
     return {
         balance: 100,

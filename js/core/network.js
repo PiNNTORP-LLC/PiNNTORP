@@ -1,5 +1,11 @@
 const API_BASE_URL = globalThis.localStorage?.getItem("pinntorp_api_base") || "http://localhost:8080";
 
+/**
+* MODULE: Core System (network.js)
+*-------------------------------------------------------
+* Purpose: Helper functions for making backend API requests
+*/
+
 // Check whether the browser has a backend session token
 export function hasBackendSession() {
     return !!globalThis.localStorage?.getItem("jwt");

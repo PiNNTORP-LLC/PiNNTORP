@@ -7,6 +7,14 @@ import { initRecView } from "./recommendation/recView.js";
 import { ensureUserState, fetchRemoteState, replaceState, state } from "./core/state.js";
 import { loadState, saveState } from "./core/storage.js";
 
+/**
+* MODULE: Entry (app.js)
+*-------------------------------------------------------
+* Purpose: Initializes the application
+* Checks login status
+* Initilizes all the UIs
+*/
+
 // Initialize auth UI on every page (header chip + form handlers)
 initAuthUI();
 

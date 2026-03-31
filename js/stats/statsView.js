@@ -1,5 +1,12 @@
 import { getStats, getHistory, resetStats } from "./stats.js";
 
+/**
+* MODULE: Statistics (statsView.js)
+*-------------------------------------------------------
+* Purpose: Handles the UI logic for the user's statistics
+* Renders the History List
+*/
+
 export function renderBalance() {
     const el = document.getElementById("balance-value");
 
