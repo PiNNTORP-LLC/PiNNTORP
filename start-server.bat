@@ -15,7 +15,7 @@ echo.
 where javac >nul 2>nul
 if %ERRORLEVEL% neq 0 (
     echo.
-    echo ERROR: JDK (javac) wasn't found on PATH.
+    echo ERROR: JDK wasnt found on PATH.
     echo Please install a JDK and ensure 'javac' and 'java' are in your PATH.
     pause
     exit /b 1
