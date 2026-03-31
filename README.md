@@ -80,33 +80,23 @@ PiNNTORP is a web-based gambling platform. Users can play 3 different gambling g
 
 ## Architecture
 
-The frontend follows a modular design pattern
+The project utilizes a **Hybrid Unified Architecture**:
+- **Frontend**: Modular ES6 JavaScript managing UI and local state fallback.
+- **Backend**: A single Java Unified Server (Port 8080) handling static files, RESTful API, and WebSockets.
 
 ```
-app.js
-├── account/
-│   └── account.js      ← Account logic
-├── core/
-│   ├── state.js        ← Centralized application state
-│   └── storage.js      ← localStorage abstraction
-├── game/
-│   ├── game.js         ← Game logic
-│   ├── gameView.js     ← Game UI layer
-│   └── games/
-│       ├── diceRoll.js
-│       └── slotGame.js
-├── friends/
-│   ├── friends.js      ← Friends list logic
-│   └── friendsView.js
-├── stats/
-│   ├── stats.js        ← Stats tracking logic
-│   └── statsView.js
-└── recommendation/
-    ├── rec.js          ← Recommendation engine
-    └── recView.js
+PiNNTORP/
+├── pinn-api/          ← Unified Java Server (HTTP + WS)
+├── js/                ← Frontend Logic
+│   ├── core/          ← networking, state & storage
+│   ├── game/          ← game engine & individual games
+│   ├── account/       ← auth & session management
+│   └── friends/       ← social graph logic
+└── docs/iter3/        ← Iteration 3 Architecture & Writeup
 ```
 
-The backend lives in `pinn-api/` and handles data persistence and recommendation logic.
+*For a detailed breakdown, see [Iteration 3 Architecture](docs/iter3/ARCHITECTURE.md).*
+
 
 ---
 
@@ -162,6 +152,11 @@ All diagrams and iteration artifacts are located in the [`docs/`](docs/) directo
 | WebSocket Statechart | [`docs/iter2/ITERATION2_STATECHART.md`](docs/iter2/ITERATION2_STATECHART.md) |
 | Iteration 2 Task Board | [`docs/iter2/ITERATION2_TASK_BOARD.md`](docs/iter2/ITERATION2_TASK_BOARD.md) |
 | Iteration 2 Burndown Chart | [`docs/iter2/ITERATION2_BURNDOWN.md`](docs/iter2/ITERATION2_BURNDOWN.md) |
+| Iteration 3 Architecture | [`docs/iter3/ARCHITECTURE.md`](docs/iter3/ARCHITECTURE.md) |
+| Iteration 3 API Reference | [`docs/iter3/API.md`](docs/iter3/API.md) |
+| Iteration 3 Writeup | [`docs/iter3/ITERATION3_WRITEUP.md`](docs/iter3/ITERATION3_WRITEUP.md) |
+| Iteration 3 Burndown Chart | [`docs/iter3/ITERATION3_BURNDOWN.md`](docs/iter3/ITERATION3_BURNDOWN.md) |
+| Iteration 3 Customer Meeting | [`docs/iter3/ITERATION3_CUSTOMER_MEETING.md`](docs/iter3/ITERATION3_CUSTOMER_MEETING.md) |
 
 ---
 
