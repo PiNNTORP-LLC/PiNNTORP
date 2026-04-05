@@ -7,6 +7,7 @@ import com.pinntorp.Server.Database;
 import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
+import java.sql.DatabaseMetaData;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -658,6 +659,39 @@ public class ConnectionHandler extends Thread {
                 Database.save();
 
                 sendJsonResponse(out, 200, String.valueOf(100 + user.profit), "success");
+                socket.close();
+                return;
+            }
+
+            // Route: Account Deletion
+            if (path.startsWith("/api/user/delete") && method.equals("POST")) {
+                String authHeader = headers.get("Authorization");
+                if (authHeader == null || !authHeader.startsWith("Bearer")) {
+                    sendJsonResponse(out, 403, "Missing JWT Authorization header", "error");
+                    socket.close();
+                    return;
+                }
+
+                String token = authHeader.substring(7);
+                String verifiedUsername = AuthHelper.validateJWTAndGetUsername(token);
+
+                if (verifiedUsername == null) {
+                    sendJsonResponse(out, 403, "Invalid JWT Token", "error");
+                    socket.close();
+                    return;
+                }
+
+                Database.users.remove(verifiedUsername);
+
+                for (Database.UserData u : Database.users.values()) {
+                    if (u.friends != null) {
+                        u.friends.remove(verifiedUsername);
+                    }
+                }
+
+                Database.save();
+
+                sendJsonResponse(out, 200, "Account Deleted Succsefully", "success");
                 socket.close();
                 return;
             }
