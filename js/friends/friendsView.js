@@ -1,8 +1,9 @@
-import { isLoggedIn, getSession } from "../core/auth.js";
+import { isLoggedIn } from "../core/auth.js";
 import { getFriends, addFriend, removeFriend } from "./friends.js";
 import { renderRec } from "../recommendation/recView.js";
 import { state } from "../core/state.js";
 import { saveState } from "../core/storage.js";
+import { getAuthHeaders, requestJson } from "../core/network.js";
 
 /*
 * MODULE: Friends List Logic (friendsView.js)
@@ -11,18 +12,15 @@ import { saveState } from "../core/storage.js";
 * UI logic for rendering the friends list and handling the add/remove buttons
 */
 
-const FRIENDS_API = "http://localhost:5500";
-const DUMMY_USERS = ["dummy_alice", "dummy_bob", "dummy_charlie"];
+const DUMMY_USERS = ["dummy_alice", "dummy_bob", "dummy_charlie", "dummy_dave", "dummy_eve"];
 
 async function friendsPost(body) {
-    const { sessionId, playerId } = getSession();
     try {
-        const res = await fetch(`${FRIENDS_API}/friends`, {
+        return await requestJson("/api/friends", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ ...body, sessionID: sessionId, playerID: playerId })
+            headers: getAuthHeaders({ "Content-Type": "application/json" }),
+            body: JSON.stringify(body)
         });
-        return res.ok ? await res.json() : null;
     } catch {
         return null;
     }
@@ -31,9 +29,13 @@ async function friendsPost(body) {
 // Sync backend friend usernames into local state so recommendations work
 function syncToLocalState(backendFriends) {
     const user = state.users[state.currentUser];
-    if (!user) return;
+    if (!user) {
+        return;
+    }
     backendFriends.forEach(({ username }) => {
-        if (!user.friends.includes(username)) user.friends.push(username);
+        if (!user.friends.includes(username)) {
+            user.friends.push(username);
+        }
         if (!state.users[username]) {
             state.users[username] = {
                 balance: 0, gamesPlayed: 0, wins: 0, losses: 0,
@@ -89,23 +91,33 @@ function setEmpty(el, text) {
 }
 
 async function refresh() {
-    const list             = document.getElementById("friends-list");
-    const receivedList     = document.getElementById("received-requests-list");
-    const sentList         = document.getElementById("sent-requests-list");
-    const requestsSection  = document.getElementById("friend-requests-section");
-    const offlineNote      = document.getElementById("friend-offline-note");
+    const list = document.getElementById("friends-list");
+    const receivedList = document.getElementById("received-requests-list");
+    const sentList = document.getElementById("sent-requests-list");
+    const requestsSection = document.getElementById("friend-requests-section");
+    const offlineNote = document.getElementById("friend-offline-note");
 
-    if (!list) return;
+    if (!list) {
+        return;
+    }
 
     if (!isLoggedIn()) {
-        if (offlineNote) offlineNote.classList.remove("hidden");
-        if (requestsSection) requestsSection.classList.add("hidden");
+        if (offlineNote) {
+            offlineNote.classList.remove("hidden");
+        }
+        if (requestsSection) {
+            requestsSection.classList.add("hidden");
+        }
         setEmpty(list, "Log in to see your friends.");
         return;
     }
 
-    if (offlineNote) offlineNote.classList.add("hidden");
-    if (requestsSection) requestsSection.classList.remove("hidden");
+    if (offlineNote) {
+        offlineNote.classList.add("hidden");
+    }
+    if (requestsSection) {
+        requestsSection.classList.remove("hidden");
+    }
 
     const [friendsData, requestsData] = await Promise.all([
         friendsPost({ action: "list-friends" }),
@@ -117,7 +129,7 @@ async function refresh() {
     const friends = friendsData?.friends ?? null;
 
     if (friends === null) {
-        // Backend unreachable — fall back to local
+        // Backend unreachable - fall back to local
         renderLocalFriends(list);
     } else {
         syncToLocalState(friends);
@@ -131,9 +143,9 @@ async function refresh() {
         if (friends.length === 0 && addedDummies.length === 0) {
             setEmpty(list, "No friends yet.");
         } else {
-            friends.forEach(({ username, playerID }) => {
+            friends.forEach(({ username }) => {
                 list.appendChild(makeFriendItem(username, async () => {
-                    await friendsPost({ action: "remove", friendID: playerID });
+                    await friendsPost({ action: "remove", friendUsername: username });
                     removeFriend(username);
                     refresh();
                     renderRec();
@@ -156,12 +168,12 @@ async function refresh() {
         if (received.length === 0) {
             setEmpty(receivedList, "No incoming requests.");
         } else {
-            received.forEach(({ username, playerID }) => {
+            received.forEach(({ username }) => {
                 receivedList.appendChild(makeRequestItem(username, [
                     {
                         label: "Accept", cls: "friend-accept-btn",
                         onClick: async () => {
-                            await friendsPost({ action: "accept", friendID: playerID });
+                            await friendsPost({ action: "accept", friendUsername: username });
                             refresh();
                             renderRec();
                         }
@@ -169,7 +181,7 @@ async function refresh() {
                     {
                         label: "Decline", cls: "friend-decline-btn",
                         onClick: async () => {
-                            await friendsPost({ action: "decline", friendID: playerID });
+                            await friendsPost({ action: "decline", friendUsername: username });
                             refresh();
                         }
                     }
@@ -185,12 +197,12 @@ async function refresh() {
         if (sent.length === 0) {
             setEmpty(sentList, "No sent requests.");
         } else {
-            sent.forEach(({ username, playerID }) => {
+            sent.forEach(({ username }) => {
                 sentList.appendChild(makeRequestItem(username, [
                     {
                         label: "Cancel", cls: "friend-decline-btn",
                         onClick: async () => {
-                            await friendsPost({ action: "cancel", friendID: playerID });
+                            await friendsPost({ action: "cancel", friendUsername: username });
                             refresh();
                         }
                     }
@@ -217,56 +229,81 @@ function renderLocalFriends(list) {
 }
 
 function addLocalFriendAndRefresh(username) {
-    if (!addFriend(username)) return false;
+    if (!addFriend(username)) {
+        return false;
+    }
     refresh();
     renderRec();
     return true;
 }
 
 export function initFriendsView() {
-    const form   = document.getElementById("friend-form");
-    const input  = document.getElementById("friend-name");
+    const form = document.getElementById("friend-form");
+    const input = document.getElementById("friend-name");
     const status = document.getElementById("friend-status");
 
-    if (!form || !input) return;
+    if (!form || !input) {
+        return;
+    }
 
     refresh();
 
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
-        const username = input.value.trim().toLowerCase();
-        if (!username) return;
+        const username = input.value.trim();
+        if (!username) {
+            return;
+        }
+        const normalizedUsername = username.toLowerCase();
 
         if (isLoggedIn()) {
             // Dummy accounts: skip backend, add locally and show immediately
-            if (DUMMY_USERS.includes(username)) {
-                const added = addLocalFriendAndRefresh(username);
+            if (DUMMY_USERS.includes(normalizedUsername)) {
+                const added = addLocalFriendAndRefresh(normalizedUsername);
                 input.value = "";
                 if (status) {
-                    status.textContent = added ? `${username} added!` : `Already friends with ${username}.`;
+                    status.textContent = added ? `${normalizedUsername} added!` : `Already friends with ${normalizedUsername}.`;
                     setTimeout(() => { status.textContent = ""; }, 3000);
                 }
                 return;
             }
 
-            if (status) status.textContent = "Searching...";
+            if (status) {
+                status.textContent = "Searching...";
+            }
 
             // Look up the target player's ID
             const found = await friendsPost({ action: "find", targetUsername: username });
+            if (found === null) {
+                if (status) {
+                    status.textContent = "Friends service unavailable. Restart the backend.";
+                }
+                return;
+            }
             if (!found?.found) {
-                if (status) status.textContent = "User not found.";
+                if (status) {
+                    status.textContent = "User not found.";
+                }
                 return;
             }
 
-            await friendsPost({ action: "add", friendID: found.playerID });
+            const addResult = await friendsPost({ action: "add", friendUsername: found.username || username });
+            if (!addResult?.success) {
+                if (status) {
+                    status.textContent = addResult?.message || "Could not send request.";
+                }
+                return;
+            }
             input.value = "";
             if (status) {
-                status.textContent = `Request sent to ${username}.`;
+                status.textContent = `Request sent to ${found.username || username}.`;
                 setTimeout(() => { status.textContent = ""; }, 3000);
             }
             refresh();
         } else {
-            if (!addLocalFriendAndRefresh(username)) return;
+            if (!addLocalFriendAndRefresh(normalizedUsername)) {
+                return;
+            }
             input.value = "";
         }
     });

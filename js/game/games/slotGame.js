@@ -18,6 +18,9 @@ function twoOutOfThreeMatch(num1, num2, num3) {
 }
 
 async function playSlotRound() {
+    const TWO_MATCH_PAYOUT = 7;
+    const JACKPOT_MULTIPLIER = 7;
+    const LOSS_AMOUNT = 5;
     // Prefer the backend result when the user has a session
     if (hasBackendSession()) {
         try {
@@ -51,21 +54,21 @@ async function playSlotRound() {
 
     user.gamesPlayed += 1;
     if (threeOutOfThreeMatch(firstNum, secNum, thirdNum)) {
-        const jackpot = firstNum * 5;
+        const jackpot = firstNum * JACKPOT_MULTIPLIER;
         user.wins += 1;
         user.balance += jackpot;
         user.profit += jackpot;
         logResult("Slots", jackpot);
     } else if (twoOutOfThreeMatch(firstNum, secNum, thirdNum)) {
         user.wins += 1;
-        user.balance += 10;
-        user.profit += 10;
-        logResult("Slots", 10);
+        user.balance += TWO_MATCH_PAYOUT;
+        user.profit += TWO_MATCH_PAYOUT;
+        logResult("Slots", TWO_MATCH_PAYOUT);
     } else {
         user.losses += 1;
-        user.balance -= 5;
-        user.profit -= 5;
-        logResult("Slots", -5);
+        user.balance -= LOSS_AMOUNT;
+        user.profit -= LOSS_AMOUNT;
+        logResult("Slots", -LOSS_AMOUNT);
     }
 
     saveState(state);

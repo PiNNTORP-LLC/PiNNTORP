@@ -11,6 +11,8 @@ import { getAuthHeaders, hasBackendSession, requestJson } from "../../core/netwo
 
 // for now using the assumption that the user makes a $5 bet
 async function rollDice(guess) {
+    const WIN_PAYOUT = 20;
+    const LOSS_AMOUNT = 5;
     // Prefer the backend result when the user has a session
     if (hasBackendSession()) {
         try {
@@ -45,14 +47,14 @@ async function rollDice(guess) {
     user.gamesPlayed += 1;
     if (won) {
         user.wins += 1;
-        user.balance += 10;
-        user.profit += 10;
-        logResult("Dice Roll", 10);
+        user.balance += WIN_PAYOUT;
+        user.profit += WIN_PAYOUT;
+        logResult("Dice Roll", WIN_PAYOUT);
     } else {
         user.losses += 1;
-        user.balance -= 5;
-        user.profit -= 5;
-        logResult("Dice Roll", -5);
+        user.balance -= LOSS_AMOUNT;
+        user.profit -= LOSS_AMOUNT;
+        logResult("Dice Roll", -LOSS_AMOUNT);
     }
 
     saveState(state);

@@ -207,7 +207,7 @@ public class FriendsHandler implements HttpHandler
             }
             else if(request.action.equals("find"))
             {
-                // Find a user by username — used by the frontend to resolve username → playerID
+                // Find a user by username - used by the frontend to resolve username -> playerID
                 int foundID = this.userStore.findByUsername(request.targetUsername != null ? request.targetUsername : "");
                 JsonObject findResponse = new JsonObject();
                 if(foundID != -1)

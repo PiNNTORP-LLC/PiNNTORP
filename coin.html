@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PiNNTORP – Earn</title>
+    <link rel="icon" type="image/png" href="resources/images/icon.png">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header class="site-header">
+        <div>
+            <button type="button" class="hamburger-btn" id="nav-open" aria-label="Open menu">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+            <a href="index.html" class="site-logo-link">
+                <img class="site-icon" src="resources/images/icon.png" alt="PiNNTORP icon">
+                <h1>PiNNTORP</h1>
+            </a>
+        </div>
+        <div class="header-meta">
+            <div class="balance-chip">Balance: <span id="balance-value">$0</span></div>
+        </div>
+    </header>
+
+    <main class="clicker-main">
+        <div class="clicker-layout">
+
+            <!-- Left: coin + stats -->
+            <div class="clicker-arena">
+                <div class="clicker-stats-bar">
+                    <div class="clicker-stat">
+                        <span class="clicker-stat-label">Per Click</span>
+                        <span id="clicker-cpc" class="clicker-stat-value">$1</span>
+                    </div>
+                    <div class="clicker-stat-divider"></div>
+                    <div class="clicker-stat">
+                        <span class="clicker-stat-label">This Session</span>
+                        <span id="clicker-total" class="clicker-stat-value">$0</span>
+                    </div>
+                </div>
+
+                <button id="clicker-coin" class="clicker-coin" aria-label="Click to earn money">
+                    <svg class="clicker-coin-svg" viewBox="0 0 120 120">
+                        <defs>
+                            <radialGradient id="cg1" cx="38%" cy="32%">
+                                <stop offset="0%"   stop-color="#fff6a0"/>
+                                <stop offset="35%"  stop-color="#d4af37"/>
+                                <stop offset="100%" stop-color="#7a5200"/>
+                            </radialGradient>
+                            <radialGradient id="cg2" cx="34%" cy="28%">
+                                <stop offset="0%"   stop-color="rgba(255,255,255,0.55)"/>
+                                <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+                            </radialGradient>
+                        </defs>
+                        <!-- shadow -->
+                        <ellipse cx="62" cy="114" rx="44" ry="5" fill="rgba(0,0,0,0.35)"/>
+                        <!-- rim -->
+                        <circle cx="60" cy="60" r="57" fill="#5a3d00"/>
+                        <!-- face -->
+                        <circle cx="60" cy="58" r="55" fill="url(#cg1)"/>
+                        <!-- inner ring -->
+                        <circle cx="60" cy="58" r="46" fill="none" stroke="rgba(120,80,0,0.45)" stroke-width="2.5"/>
+                        <!-- $ body -->
+                        <text x="60" y="80" font-size="58" font-weight="900" text-anchor="middle"
+                              font-family="Georgia,serif" fill="rgba(80,50,0,0.35)">$</text>
+                        <text x="60" y="77" font-size="58" font-weight="900" text-anchor="middle"
+                              font-family="Georgia,serif" fill="#fff8d0">$</text>
+                        <!-- shine -->
+                        <ellipse cx="43" cy="36" rx="22" ry="13" fill="url(#cg2)"
+                                 transform="rotate(-25 43 36)"/>
+                    </svg>
+                    <div id="clicker-cooldown" class="clicker-cooldown"></div>
+                </button>
+
+                <p id="clicker-hint" class="clicker-hint">Click the coin to earn money!</p>
+            </div>
+
+            <!-- Right: upgrades -->
+            <aside class="clicker-upgrades-panel">
+                <h2 class="clicker-upgrades-title">Upgrades</h2>
+                <p class="clicker-upgrades-sub">Spend balance to earn faster</p>
+                <div id="clicker-upgrades" class="clicker-upgrades"></div>
+            </aside>
+
+        </div>
+    </main>
+
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>

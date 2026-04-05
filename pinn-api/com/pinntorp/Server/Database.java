@@ -56,6 +56,8 @@ public class Database {
 
         // Social Features
         public List<String> friends = new ArrayList<>();
+        public List<String> receivedFriendRequests = new ArrayList<>();
+        public List<String> sentFriendRequests = new ArrayList<>();
 
         // Game Logs
         public List<GameLog> gameLogs = new ArrayList<>();
@@ -75,6 +77,8 @@ public class Database {
             this.losses = losses;
             this.profit = profit;
             this.friends = new ArrayList<>();
+            this.receivedFriendRequests = new ArrayList<>();
+            this.sentFriendRequests = new ArrayList<>();
             this.gameLogs = new ArrayList<>();
         }
 

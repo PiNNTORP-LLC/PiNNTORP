@@ -8,7 +8,7 @@ import java.net.InetSocketAddress;
 
 /**
  * Minimal standalone entry point for the auth/friends HTTP API.
- * Does NOT start the WebSocket server — avoids the org.java_websocket dependency
+ * Does NOT start the WebSocket server - avoids the org.java_websocket dependency
  * that is missing from the project's lib/ folder.
  */
 public class AuthMain {

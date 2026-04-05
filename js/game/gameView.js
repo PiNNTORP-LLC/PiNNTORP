@@ -19,7 +19,9 @@ export function initGameStage() {
     const links = [...document.querySelectorAll(".game-tab-link")];
     const panels = [...document.querySelectorAll(".game-panel")];
 
-    if (links.length === 0 || panels.length === 0) return;
+    if (links.length === 0 || panels.length === 0) {
+        return;
+    }
 
     function activateGame(targetId) {
         let foundPanel = null;
@@ -78,14 +80,18 @@ export function initGameView() {
         6: { x: 90, y: 0 }
     };
 
-    if (!controls || !result) return;
+    if (!controls || !result) {
+        return;
+    }
 
     [1, 2, 3, 4, 5, 6].forEach((value) => {
         const button = document.createElement("button");
         button.type = "button";
         button.textContent = String(value);
         button.addEventListener("click", async () => {
-            if (button.disabled) return;
+            if (button.disabled) {
+                return;
+            }
             const buttons = controls.querySelectorAll("button");
             buttons.forEach(btn => btn.disabled = true);
             result.textContent = "Rolling...";
@@ -137,7 +143,9 @@ export function initGameView() {
 
 export function initSlotView() {
     const button = document.getElementById("slot-roll");
-    if (!button) return;
+    if (!button) {
+        return;
+    }
 
     const modBtn = document.getElementById("slot-mode-btn");
     const leverHandle = document.getElementById("lever-handle");
@@ -158,13 +166,17 @@ export function initSlotView() {
 
     function resetSlots() {
         reels.forEach((reel) => {
-            if (gsap) gsap.set(reel, { y: 0 });
+            if (gsap) {
+                gsap.set(reel, { y: 0 });
+            }
             reel.innerHTML = `<div class="slot-symbol">?</div>`;
         });
         const windowEls = [...document.querySelectorAll(".slot-window")];
         windowEls.forEach(w => w.classList.remove("glow-win", "glow-jackpot", "glow-dim"));
         const slotMachineEl = document.querySelector(".slot-machine");
-        if (slotMachineEl) slotMachineEl.classList.remove("jackpot-flash");
+        if (slotMachineEl) {
+            slotMachineEl.classList.remove("jackpot-flash");
+        }
     }
 
     resetSlots();
@@ -179,13 +191,17 @@ export function initSlotView() {
     }
 
     button.addEventListener("click", async () => {
-        if (button.disabled) return;
+        if (button.disabled) {
+            return;
+        }
         button.disabled = true;
 
         const windowEls = [...document.querySelectorAll(".slot-window")];
         const slotMachineEl = document.querySelector(".slot-machine");
         windowEls.forEach(w => w.classList.remove("glow-win", "glow-jackpot", "glow-dim"));
-        if (slotMachineEl) slotMachineEl.classList.remove("jackpot-flash");
+        if (slotMachineEl) {
+            slotMachineEl.classList.remove("jackpot-flash");
+        }
 
         if (gsap && leverHandle) {
             const tl = gsap.timeline();
@@ -223,7 +239,9 @@ export function initSlotView() {
         const slotNums = await slotGameApi.play();
 
         reels.forEach((reel, index) => {
-            if (gsap) gsap.killTweensOf(reel);
+            if (gsap) {
+                gsap.killTweensOf(reel);
+            }
             const dir = Number.parseInt(reel.dataset.dir || "1", 10);
             let html = "";
             if (dir === 1) {
@@ -259,11 +277,15 @@ export function initSlotView() {
 
         if (allMatch) {
             windowEls.forEach(w => w.classList.add("glow-jackpot"));
-            if (slotMachineEl) slotMachineEl.classList.add("jackpot-flash");
+            if (slotMachineEl) {
+                slotMachineEl.classList.add("jackpot-flash");
+            }
         } else if (matchIndices.length === 2) {
             const dimIndex = [0, 1, 2].find(i => !matchIndices.includes(i));
             matchIndices.forEach(i => windowEls[i].classList.add("glow-win"));
-            if (dimIndex !== undefined) windowEls[dimIndex].classList.add("glow-dim");
+            if (dimIndex !== undefined) {
+                windowEls[dimIndex].classList.add("glow-dim");
+            }
         }
 
         button.disabled = false;
@@ -280,7 +302,9 @@ export function initCoinFlipView() {
     const coin = document.getElementById("coin");
     const gsap = globalThis.gsap || null;
 
-    if (!headsButton) return;
+    if (!headsButton) {
+        return;
+    }
 
     let totalRotation = 0;
 
@@ -296,7 +320,9 @@ export function initCoinFlipView() {
             const targetAngle = result === "Heads" ? 0 : 180;
             const currentMod = totalRotation % 360;
             let adjustment = targetAngle - currentMod;
-            if (adjustment < 0) adjustment += 360;
+            if (adjustment < 0) {
+                adjustment += 360;
+            }
             totalRotation += 8 * 360 + adjustment;
 
             await gsap.to(coin, {
@@ -333,21 +359,39 @@ export function initBlackjackView() {
     const dealerTotalEl = document.getElementById("bj-dealer-total");
     const resultEl = document.getElementById("bj-result");
 
-    if (!dealBtn) return;
+    if (!dealBtn) {
+        return;
+    }
 
-    let bet = 5;
+    const MIN_BET = 5;
+    const STEP = 5;
+    let bet = MIN_BET;
+
     const updateBetUI = () => {
+        const balance = getStats().balance;
+        // Clamp: never exceed balance, never go below minimum
+        bet = Math.min(bet, Math.max(MIN_BET, Math.floor(balance / STEP) * STEP));
+        if (bet < MIN_BET) {
+            bet = MIN_BET;
+        }
         betValueEl.textContent = `$${bet}`;
-        betMinusBtn.disabled = bet <= 5;
+        betMinusBtn.disabled = bet <= MIN_BET;
+        betPlusBtn.disabled = (bet + STEP) > balance;
     };
 
-    betMinusBtn.addEventListener("click", () => { bet = Math.max(5, bet - 5); updateBetUI(); });
-    betPlusBtn.addEventListener("click", () => { 
-        if (bet + 5 <= getStats().balance) {
-            bet += 5; 
-        }
-        updateBetUI(); 
+    betMinusBtn.addEventListener("click", () => {
+        bet = Math.max(MIN_BET, bet - STEP);
+        updateBetUI();
     });
+
+    betPlusBtn.addEventListener("click", () => {
+        const balance = getStats().balance;
+        if ((bet + STEP) <= balance) {
+            bet += STEP;
+        }
+        updateBetUI();
+    });
+
     updateBetUI();
 
     function makeCard(card, faceDown = false, delay = 0) {
@@ -373,7 +417,12 @@ export function initBlackjackView() {
         dealBtn.style.display = playing ? "none" : "";
         hitBtn.style.display = playing ? "" : "none";
         standBtn.style.display = playing ? "" : "none";
-        betPlusBtn.disabled = playing;
+        if (playing) {
+            betMinusBtn.disabled = true;
+            betPlusBtn.disabled = true;
+        } else {
+            updateBetUI(); // re-clamp and refresh both buttons
+        }
     }
 
     setPhase("idle");
@@ -425,7 +474,11 @@ export function initBlackjackView() {
         renderHand(dealerHandEl, final.dealerHand);
         playerTotalEl.textContent = final.playerTotal;
         dealerTotalEl.textContent = final.dealerTotal;
-        const msg = { win: `You win! +$${final.delta}`, loss: `Dealer wins. -$${Math.abs(final.delta)}`, push: "Push — it's a tie." };
+        const msg = {
+            win: `You win! +$${final.delta}`,
+            loss: `Dealer wins. -$${Math.abs(final.delta)}`,
+            push: "Push - it's a tie."
+        };
         resultEl.textContent = msg[final.outcome];
         setPhase("idle");
         renderStats();

@@ -10,17 +10,16 @@
 <body>
     <header class="site-header">
         <div>
-            <h1>PiNNTORP</h1>
-            <nav class="tab-nav" aria-label="Primary">
-                <a class="tab-link is-active" href="index.html">Home</a>
-                <a class="tab-link" href="games.html">Games</a>
-                <a class="tab-link" href="friends.html">Friends</a>
-                <a class="tab-link" href="profile.html">Profile</a>
-            </nav>
+            <button type="button" class="hamburger-btn" id="nav-open" aria-label="Open menu">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+            <a href="index.html" class="site-logo-link">
+                <img class="site-icon" src="resources/images/icon.png" alt="PiNNTORP icon">
+                <h1>PiNNTORP</h1>
+            </a>
         </div>
         <div class="header-meta">
             <div class="balance-chip">Balance: <span id="balance-value">$0</span></div>
-            <img class="site-icon" src="resources/images/icon.png" alt="PiNNTORP icon">
         </div>
     </header>
 
@@ -37,7 +36,8 @@
         <div id="register-container" class="auth-form-wrap auth-panel-hidden">
             <h2 class="auth-title">Create Account</h2>
             <form id="register-form" class="auth-form">
-                <input name="username" type="text" placeholder="Username" required class="auth-input">
+                <input name="username" type="text" placeholder="Username" required class="auth-input" id="reg-username-input">
+                <p id="reg-username-error" class="auth-field-error">Username already taken!</p>
                 <input name="password" type="password" placeholder="Password" required class="auth-input">
                 <button type="submit" class="auth-submit-btn">Sign Up</button>
             </form>
@@ -46,34 +46,93 @@
         <p id="auth-message" class="auth-message"></p>
     </section>
 
-    <main class="layout">
-        <div class="column">
-            <section>
+    <main class="home-dashboard">
+        <section class="home-hero">
+            <div class="home-hero-copy">
+                <span class="home-kicker">Featured Table</span>
                 <h2>Home</h2>
-                <p>Welcome back to PiNNTORP.</p>
-                <p>Use the tabs above to jump between your games, friends list, and profile stats.</p>
+                <p class="home-lead">Welcome back to PiNNTORP. PiNNTORP is a web-based gambling platform. Here you can play 4 different gambling games, track your win/loss statistics, manage your own friends list, and receive personalized game recommendations.</p>
+                <div class="home-actions">
+                    <a class="home-action-card" href="games.html#slots-game">
+                        <span class="home-action-label">Start Here</span>
+                        <strong>Play Slots</strong>
+                        <span>Open the slots game right away.</span>
+                    </a>
+                    <a class="home-action-card" href="friends.html">
+                        <span class="home-action-label">Friends</span>
+                        <strong>Open Friends</strong>
+                        <span>Check requests and manage your list.</span>
+                    </a>
+                    <a class="home-action-card" href="profile.html">
+                        <span class="home-action-label">Profile</span>
+                        <strong>View Profile</strong>
+                        <span>See your stats and recent performance.</span>
+                    </a>
+                </div>
+            </div>
+            <div class="home-hero-art" id="recent-game-card" aria-live="polite">
+                <div class="recent-game-empty">
+                    <span class="recent-game-kicker">Most Recent Game</span>
+                    <strong>No games played yet</strong>
+                    <p>Your latest table will appear here as soon as you finish a round.</p>
+                    <a class="recent-game-link" href="games.html">Open Games</a>
+                </div>
+            </div>
+        </section>
+
+        <div class="home-feature-grid">
+            <section class="home-feature-card home-feature-card--wide">
+                <div class="section-heading">
+                    <div>
+                        <span class="section-eyebrow">Recent Activity</span>
+                        <h2>Latest Results</h2>
+                    </div>
+                    <span class="section-badge">Your Last Few Games</span>
+                </div>
+                <div id="home-activity-list" class="home-activity-list" aria-live="polite"></div>
             </section>
 
-            <section>
-                <h2>Quick Links</h2>
-                <p>Log in or sign up above to access Games and your Profile.</p>
-                <p>Open Friends to manage your list and improve recommendations.</p>
+            <section class="home-feature-card">
+                <div class="section-heading">
+                    <div>
+                        <span class="section-eyebrow">Quick Access</span>
+                        <h2>Quick Links</h2>
+                    </div>
+                </div>
+                <div class="home-link-list">
+                    <a href="games.html" class="home-inline-link">Browse the full game room</a>
+                    <a href="friends.html" class="home-inline-link">Manage friends and requests</a>
+                    <a href="profile.html" class="home-inline-link">Review performance stats</a>
+                </div>
             </section>
         </div>
 
-        <div class="column">
-            <section>
-                <h2>Overview</h2>
-                <p>Your recommendations are shown below in ranked order.</p>
-                <p>Select any recommendation card to jump straight to that game.</p>
-            </section>
-        </div>
+        <section class="home-rec-section">
+            <div class="section-heading">
+                <div>
+                    <span class="section-eyebrow">Picked For You</span>
+                    <h2>Recommended For You</h2>
+                </div>
+                <span class="section-badge">Based On Your Play</span>
+            </div>
+            <div id="rec-list" class="rec-list" aria-live="polite"></div>
+        </section>
+
+        <section class="home-category-section">
+            <div class="section-heading">
+                <div>
+                    <span class="section-eyebrow">Browse Games</span>
+                    <h2>Explore Categories</h2>
+                </div>
+            </div>
+            <div class="home-category-row">
+                <a href="games.html#slots-game" class="home-category-pill">Slots</a>
+                <a href="games.html#dice-game" class="home-category-pill">Dice</a>
+                <a href="games.html#coin-flip-game" class="home-category-pill">Coin Flip</a>
+                <a href="games.html#blackjack-game" class="home-category-pill">Blackjack</a>
+            </div>
+        </section>
     </main>
-
-    <section class="full-width-section">
-        <h2>Recommended Games</h2>
-        <div id="rec-list" class="rec-list" aria-live="polite"></div>
-    </section>
 
     <script type="module" src="js/app.js"></script>
 </body>

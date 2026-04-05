@@ -41,6 +41,8 @@ public class Database {
         public int losses;
         public int profit;
         public List<String> friends = new ArrayList<>();
+        public List<String> receivedFriendRequests = new ArrayList<>();
+        public List<String> sentFriendRequests = new ArrayList<>();
         public List<GameLog> gameLogs = new ArrayList<>();
 
         public UserData(String username, String role, String salt, String hash) {
@@ -56,6 +58,10 @@ public class Database {
             this.wins = wins;
             this.losses = losses;
             this.profit = profit;
+            this.friends = new ArrayList<>();
+            this.receivedFriendRequests = new ArrayList<>();
+            this.sentFriendRequests = new ArrayList<>();
+            this.gameLogs = new ArrayList<>();
         }
     }
 

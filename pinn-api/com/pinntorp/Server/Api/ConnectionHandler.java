@@ -51,6 +51,37 @@ public class ConnectionHandler extends Thread {
         out.flush();
     }
 
+    private void sendRawJsonResponse(OutputStream out, int statusCode, String json) throws IOException {
+        String response = "HTTP/1.1 " + statusCode + " OK\r\n" +
+                "Content-Type: application/json\r\n" +
+                "Content-Length: " + json.length() + "\r\n" +
+                "Access-Control-Allow-Origin: *\r\n\r\n" +
+                json;
+        out.write(response.getBytes("UTF-8"));
+        out.flush();
+    }
+
+    private String escapeJson(String value) {
+        if (value == null) return "";
+        return value.replace("\\", "\\\\").replace("\"", "\\\"");
+    }
+
+    private void ensureSocialLists(Database.UserData user) {
+        if (user.friends == null) user.friends = new java.util.ArrayList<>();
+        if (user.receivedFriendRequests == null) user.receivedFriendRequests = new java.util.ArrayList<>();
+        if (user.sentFriendRequests == null) user.sentFriendRequests = new java.util.ArrayList<>();
+    }
+
+    private String usernamesToJson(java.util.List<String> usernames) {
+        StringBuilder json = new StringBuilder("[");
+        for (int i = 0; i < usernames.size(); i++) {
+            if (i > 0) json.append(",");
+            json.append("{\"username\":\"").append(escapeJson(usernames.get(i))).append("\"}");
+        }
+        json.append("]");
+        return json.toString();
+    }
+
     @Override
     public void run() {
         try {
@@ -236,9 +267,9 @@ public class ConnectionHandler extends Thread {
 
                 int profit = -5; // base loss
                 if (firstNum == secNum && secNum == thirdNum) {
-                    profit = firstNum * 5;
+                    profit = firstNum * 7;
                 } else if (firstNum == secNum || firstNum == thirdNum || secNum == thirdNum) {
-                    profit = 10;
+                    profit = 7;
                 }
 
                 Database.UserData user = Database.users.get(verifiedUsername);
@@ -268,6 +299,141 @@ public class ConnectionHandler extends Thread {
 
                 out.write(response.getBytes("UTF-8"));
                 out.flush();
+                socket.close();
+                return;
+            }
+
+            if (path.startsWith("/api/friends") && method.equals("POST")) {
+                String authHeader = headers.get("Authorization");
+                if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                    sendJsonResponse(out, 403, "Missing JWT Authorization header.", "error");
+                    socket.close();
+                    return;
+                }
+
+                String verifiedUsername = AuthHelper.validateJWTAndGetUsername(authHeader.substring(7));
+                if (verifiedUsername == null) {
+                    sendJsonResponse(out, 403, "Invalid JWT Token.", "error");
+                    socket.close();
+                    return;
+                }
+
+                Database.UserData user = Database.users.get(verifiedUsername);
+                if (user == null) {
+                    sendJsonResponse(out, 404, "User not found in database.", "error");
+                    socket.close();
+                    return;
+                }
+
+                ensureSocialLists(user);
+
+                int contentLen = Integer.parseInt(headers.getOrDefault("Content-Length", "0"));
+                String body = getRequestBody(in, contentLen);
+                String action = extractJsonString(body, "action");
+                String targetUsername = extractJsonString(body, "targetUsername");
+                String friendUsername = extractJsonString(body, "friendUsername");
+
+                if (action == null) {
+                    sendJsonResponse(out, 400, "Missing action.", "error");
+                    socket.close();
+                    return;
+                }
+
+                if (action.equals("find")) {
+                    Database.UserData target = Database.users.get(targetUsername);
+                    String json = target != null
+                            ? "{\"found\":true,\"username\":\"" + escapeJson(target.username) + "\"}"
+                            : "{\"found\":false}";
+                    sendRawJsonResponse(out, 200, json);
+                    socket.close();
+                    return;
+                }
+
+                if (action.equals("list-friends")) {
+                    sendRawJsonResponse(out, 200, "{\"friends\":" + usernamesToJson(user.friends) + "}");
+                    socket.close();
+                    return;
+                }
+
+                if (action.equals("list-requests")) {
+                    String json = "{\"sent\":" + usernamesToJson(user.sentFriendRequests)
+                            + ",\"received\":" + usernamesToJson(user.receivedFriendRequests) + "}";
+                    sendRawJsonResponse(out, 200, json);
+                    socket.close();
+                    return;
+                }
+
+                Database.UserData friendUser = Database.users.get(friendUsername);
+                if (friendUsername == null || friendUser == null) {
+                    sendJsonResponse(out, 404, "User not found.", "error");
+                    socket.close();
+                    return;
+                }
+
+                ensureSocialLists(friendUser);
+
+                if (verifiedUsername.equals(friendUsername)) {
+                    sendJsonResponse(out, 400, "You cannot friend yourself.", "error");
+                    socket.close();
+                    return;
+                }
+
+                if (action.equals("add")) {
+                    if (user.friends.contains(friendUsername)) {
+                        sendRawJsonResponse(out, 200, "{\"success\":false,\"message\":\"Already friends.\"}");
+                    } else if (user.sentFriendRequests.contains(friendUsername)) {
+                        sendRawJsonResponse(out, 200, "{\"success\":false,\"message\":\"Request already sent.\"}");
+                    } else if (user.receivedFriendRequests.contains(friendUsername)) {
+                        sendRawJsonResponse(out, 200, "{\"success\":false,\"message\":\"This user already sent you a request.\"}");
+                    } else {
+                        user.sentFriendRequests.add(friendUsername);
+                        friendUser.receivedFriendRequests.add(verifiedUsername);
+                        Database.save();
+                        sendRawJsonResponse(out, 200, "{\"success\":true}");
+                    }
+                    socket.close();
+                    return;
+                }
+
+                if (action.equals("remove")) {
+                    user.friends.remove(friendUsername);
+                    friendUser.friends.remove(verifiedUsername);
+                    Database.save();
+                    sendRawJsonResponse(out, 200, "{\"success\":true}");
+                    socket.close();
+                    return;
+                }
+
+                if (action.equals("accept")) {
+                    user.receivedFriendRequests.remove(friendUsername);
+                    friendUser.sentFriendRequests.remove(verifiedUsername);
+                    if (!user.friends.contains(friendUsername)) user.friends.add(friendUsername);
+                    if (!friendUser.friends.contains(verifiedUsername)) friendUser.friends.add(verifiedUsername);
+                    Database.save();
+                    sendRawJsonResponse(out, 200, "{\"success\":true}");
+                    socket.close();
+                    return;
+                }
+
+                if (action.equals("decline")) {
+                    user.receivedFriendRequests.remove(friendUsername);
+                    friendUser.sentFriendRequests.remove(verifiedUsername);
+                    Database.save();
+                    sendRawJsonResponse(out, 200, "{\"success\":true}");
+                    socket.close();
+                    return;
+                }
+
+                if (action.equals("cancel")) {
+                    user.sentFriendRequests.remove(friendUsername);
+                    friendUser.receivedFriendRequests.remove(verifiedUsername);
+                    Database.save();
+                    sendRawJsonResponse(out, 200, "{\"success\":true}");
+                    socket.close();
+                    return;
+                }
+
+                sendJsonResponse(out, 400, "Unsupported action requested.", "error");
                 socket.close();
                 return;
             }
@@ -315,7 +481,7 @@ public class ConnectionHandler extends Thread {
 
                 int roll = (int) (Math.random() * 6) + 1;
                 boolean won = (guess == roll);
-                int profit = won ? 10 : -5;
+                int profit = won ? 20 : -5;
 
                 Database.UserData user = Database.users.get(verifiedUsername);
                 if (user != null) {
@@ -348,7 +514,155 @@ public class ConnectionHandler extends Thread {
                 return;
             }
 
-            // Route 7: Static File Server
+            // Route 6b: Blackjack result sync API (Requires JWT)
+            if (path.startsWith("/api/blackjack") && method.equals("POST")) {
+                String authHeader = headers.get("Authorization");
+                if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                    sendJsonResponse(out, 403, "Missing JWT Authorization header.", "error");
+                    socket.close();
+                    return;
+                }
+
+                String token = authHeader.substring(7);
+                String verifiedUsername = AuthHelper.validateJWTAndGetUsername(token);
+
+                if (verifiedUsername == null) {
+                    sendJsonResponse(out, 403, "Invalid JWT Token.", "error");
+                    socket.close();
+                    return;
+                }
+
+                int contentLen = Integer.parseInt(headers.getOrDefault("Content-Length", "0"));
+                String body = getRequestBody(in, contentLen);
+                String outcome = extractJsonString(body, "outcome");
+                if (outcome == null) outcome = "push";
+
+                int bet = 5;
+                try {
+                    String betStr = extractJsonString(body, "bet");
+                    if (betStr == null) {
+                        String search = "\"bet\":";
+                        int start = body.indexOf(search);
+                        if (start != -1) {
+                            start += search.length();
+                            int end = body.indexOf(",", start);
+                            if (end == -1) end = body.indexOf("}", start);
+                            bet = Integer.parseInt(body.substring(start, end).trim());
+                        }
+                    } else {
+                        bet = Integer.parseInt(betStr);
+                    }
+                } catch (Exception ignored) {
+                }
+
+                int profit = 0;
+                Database.UserData user = Database.users.get(verifiedUsername);
+                if (user != null) {
+                    user.gamesPlayed++;
+                    if ("blackjack".equals(outcome)) {
+                        profit = (int) Math.ceil(bet * 1.5);
+                        user.wins++;
+                    } else if ("win".equals(outcome)) {
+                        profit = bet;
+                        user.wins++;
+                    } else if ("loss".equals(outcome)) {
+                        profit = -bet;
+                        user.losses++;
+                    }
+                    user.profit += profit;
+                    Database.save();
+                }
+
+                String json = String.format(
+                        "{\"status\":\"success\", \"profit\": %d, \"stats\": {\"gamesPlayed\":%d, \"wins\":%d, \"losses\":%d, \"profit\":%d}}",
+                        profit,
+                        user != null ? user.gamesPlayed : 0,
+                        user != null ? user.wins : 0,
+                        user != null ? user.losses : 0,
+                        user != null ? user.profit : 0);
+
+                String response = "HTTP/1.1 200 OK\r\n" +
+                        "Content-Type: application/json\r\n" +
+                        "Content-Length: " + json.length() + "\r\n" +
+                        "Access-Control-Allow-Origin: *\r\n\r\n" +
+                        json;
+
+                out.write(response.getBytes("UTF-8"));
+                out.flush();
+                socket.close();
+                return;
+            }
+
+            // Route 7: Clicker Earn/Spend API (Requires JWT)
+            // Accepts {"amount": N} - positive = earning from clicks, negative = upgrade purchase.
+            // Server caps: earn max 500 per call, spend max 15000 per call.
+            if (path.startsWith("/api/earn") && method.equals("POST")) {
+                String authHeader = headers.get("Authorization");
+                if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                    sendJsonResponse(out, 403, "Missing JWT Authorization header.", "error");
+                    socket.close();
+                    return;
+                }
+
+                String token = authHeader.substring(7);
+                String verifiedUsername = AuthHelper.validateJWTAndGetUsername(token);
+
+                if (verifiedUsername == null) {
+                    sendJsonResponse(out, 403, "Invalid JWT Token.", "error");
+                    socket.close();
+                    return;
+                }
+
+                int contentLen = Integer.parseInt(headers.getOrDefault("Content-Length", "0"));
+                String body = getRequestBody(in, contentLen);
+                int amount = 0;
+                try {
+                    String search = "\"amount\":";
+                    int start = body.indexOf(search);
+                    if (start != -1) {
+                        start += search.length();
+                        int end = body.indexOf("}", start);
+                        int comma = body.indexOf(",", start);
+                        if (comma != -1 && comma < end) end = comma;
+                        amount = Integer.parseInt(body.substring(start, end).trim());
+                    }
+                } catch (Exception e) {
+                    amount = 0;
+                }
+
+                // Clamp to prevent abuse
+                final int MAX_EARN = 500;
+                final int MAX_SPEND = 15000;
+                if (amount > MAX_EARN || amount < -MAX_SPEND || amount == 0) {
+                    sendJsonResponse(out, 400, "Invalid amount.", "error");
+                    socket.close();
+                    return;
+                }
+
+                Database.UserData user = Database.users.get(verifiedUsername);
+                if (user == null) {
+                    sendJsonResponse(out, 404, "User not found.", "error");
+                    socket.close();
+                    return;
+                }
+
+                // Prevent spending more than available balance (balance = 100 + profit)
+                int currentBalance = 100 + user.profit;
+                if (amount < 0 && currentBalance + amount < 0) {
+                    sendJsonResponse(out, 400, "Insufficient balance.", "error");
+                    socket.close();
+                    return;
+                }
+
+                user.profit += amount;
+                Database.save();
+
+                sendJsonResponse(out, 200, String.valueOf(100 + user.profit), "success");
+                socket.close();
+                return;
+            }
+
+            // Route 8: Static File Server
             if (method.equals("GET")) {
                 if (path.equals("/")) {
                     path = "/index.html";

@@ -32,6 +32,14 @@ function getDummyUsers() {
         "dummy_charlie": {
             ...createUserTemplate(),
             favoriteGames: ["Number Guesser", "Coin Flip"]
+        },
+        "dummy_dave": {
+            ...createUserTemplate(),
+            favoriteGames: ["Blackjack", "Slots"]
+        },
+        "dummy_eve": {
+            ...createUserTemplate(),
+            favoriteGames: ["Blackjack", "Coin Flip", "Slots"]
         }
     };
 }
@@ -96,7 +104,7 @@ export function replaceState(nextState) {
             ...getDummyUsers()
         };
         state.currentUser = "main_user";
-        state.users["main_user"].friends = ["dummy_alice", "dummy_bob", "dummy_charlie"];
+        state.users["main_user"].friends = ["dummy_alice", "dummy_bob", "dummy_charlie", "dummy_dave", "dummy_eve"];
     }
 }
 

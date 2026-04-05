@@ -10,17 +10,16 @@
 <body>
     <header class="site-header">
         <div>
-            <h1>PiNNTORP</h1>
-            <nav class="tab-nav" aria-label="Primary">
-                <a class="tab-link" href="index.html">Home</a>
-                <a class="tab-link" href="games.html">Games</a>
-                <a class="tab-link" href="friends.html">Friends</a>
-                <a class="tab-link is-active" href="profile.html">Profile</a>
-            </nav>
+            <button type="button" class="hamburger-btn" id="nav-open" aria-label="Open menu">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+            <a href="index.html" class="site-logo-link">
+                <img class="site-icon" src="resources/images/icon.png" alt="PiNNTORP icon">
+                <h1>PiNNTORP</h1>
+            </a>
         </div>
         <div class="header-meta">
             <div class="balance-chip">Balance: <span id="balance-value">$0</span></div>
-            <img class="site-icon" src="resources/images/icon.png" alt="PiNNTORP icon">
         </div>
     </header>
 

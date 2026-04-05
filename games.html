@@ -11,17 +11,16 @@
 <body>
     <header class="site-header">
         <div>
-            <h1>PiNNTORP</h1>
-            <nav class="tab-nav" aria-label="Primary">
-                <a class="tab-link" href="index.html">Home</a>
-                <a class="tab-link is-active" href="games.html">Games</a>
-                <a class="tab-link" href="friends.html">Friends</a>
-                <a class="tab-link" href="profile.html">Profile</a>
-            </nav>
+            <button type="button" class="hamburger-btn" id="nav-open" aria-label="Open menu">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+            <a href="index.html" class="site-logo-link">
+                <img class="site-icon" src="resources/images/icon.png" alt="PiNNTORP icon">
+                <h1>PiNNTORP</h1>
+            </a>
         </div>
         <div class="header-meta">
             <div class="balance-chip">Balance: <span id="balance-value">$0</span></div>
-            <img class="site-icon" src="resources/images/icon.png" alt="PiNNTORP icon">
         </div>
     </header>
 
@@ -37,7 +36,18 @@
 
         <section id="slots-game" class="slots game-panel">
             <h2>Slots</h2>
-            <p class="help-text">How This Game Works: If the player places a $5 bet and gets 2 matching symbols then, the payout will be $5x2 = $10. If there are 3 matching symbols, then the payout will be $5x5 = $25</p>
+            <div class="game-info-card">
+                <div class="game-info-header">
+                    <span class="game-info-eyebrow">How To Play</span>
+                    <span class="game-info-pill">Bet: $5</span>
+                </div>
+                <p class="game-info-lead">Spin the reels and line up matching symbols for a payout.</p>
+                <ul class="game-info-list">
+                    <li>Match 2 symbols to win <strong>$7</strong>.</li>
+                    <li>Match all 3 symbols to win <strong>7x the symbol value</strong>.</li>
+                    <li>Use the mode toggle to switch between number and fruit symbols.</li>
+                </ul>
+            </div>
             <button type="button" id="slot-mode-btn" class="mode-toggle">🍒 Fruits</button>
             <div class="slot-machine">
                 <div class="lever" id="lever">
@@ -70,7 +80,18 @@
 
         <section id="dice-game" class="game-panel hidden">
             <h2>Dice Roll</h2>
-            <p class="help-text">How This Game Works: First, place a bet then pick a number. If the number is guessed right they payout will be double the original bet (ex: $5 bet then payout will be $10)</p>
+            <div class="game-info-card">
+                <div class="game-info-header">
+                    <span class="game-info-eyebrow">How To Play</span>
+                    <span class="game-info-pill">Bet: $5</span>
+                </div>
+                <p class="game-info-lead">Pick one number, roll once, and hope the die lands on your guess.</p>
+                <ul class="game-info-list">
+                    <li>Choose any number from <strong>1 to 6</strong>.</li>
+                    <li>A correct guess pays <strong>$20</strong>.</li>
+                    <li>A miss costs <strong>$5</strong>.</li>
+                </ul>
+            </div>
             <p class="dice-copy">Pick a number and roll the die!</p>
             <div class="dice-container">
                 <div id="dice" class="dice">
@@ -115,7 +136,18 @@
 
         <section id="coin-flip-game" class="game-panel hidden">
             <h2>Coin Flip</h2>
-            <p class="help-text">How This Game Works: First, place a bet, then pick either heads or tails. If your guess is right then the payout will be double the original bet (ex: $5 bet then payout will be $10)</p>
+            <div class="game-info-card">
+                <div class="game-info-header">
+                    <span class="game-info-eyebrow">How To Play</span>
+                    <span class="game-info-pill">Bet: $5</span>
+                </div>
+                <p class="game-info-lead">Call heads or tails before the coin lands.</p>
+                <ul class="game-info-list">
+                    <li>Choose <strong>Heads</strong> or <strong>Tails</strong>.</li>
+                    <li>A correct call pays <strong>$6</strong>.</li>
+                    <li>A wrong call costs <strong>$5</strong>.</li>
+                </ul>
+            </div>
             <div class="coin-flip-area">
                 <div class="coin-container">
                     <div id="coin" class="coin">
@@ -134,7 +166,18 @@
 
         <section id="blackjack-game" class="game-panel hidden">
             <h2>Blackjack</h2>
-            <p class="help-text">How This Game Works: The Player starts with 2 cards. The player is given the option between Hit or Stand. Hit will give the player another card. Stand will tell the dealer to stop giving cards. In order to win, the player must either have a Black Jack (card value total of 21) or have a hand value higher than the dealer in the end of the round. Payout is double the original bet</p>
+            <div class="game-info-card">
+                <div class="game-info-header">
+                    <span class="game-info-eyebrow">How To Play</span>
+                    <span class="game-info-pill">Flexible Bet</span>
+                </div>
+                <p class="game-info-lead">Build a hand closer to 21 than the dealer without going over.</p>
+                <ul class="game-info-list">
+                    <li><strong>Hit</strong> to take another card, or <strong>Stand</strong> to hold.</li>
+                    <li>Beat the dealer total to win an amount equal to your bet.</li>
+                    <li>A natural blackjack pays <strong>1.5x</strong> your bet.</li>
+                </ul>
+            </div>
             <div class="bj-table">
                 <div class="bj-dealer-area">
                     <p class="bj-area-label">Dealer <span id="bj-dealer-total" class="bj-total"></span></p>
