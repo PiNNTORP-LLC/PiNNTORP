@@ -10,15 +10,18 @@ public class Session
     {
         this.expiry = System.currentTimeMillis() + 30 * 60 * 1000;
         this.playerID = playerID;
+        this.lobbyID = null;
     }
 
     // Check if session has expired, returning null if so.
+    // Returns session object with extended expiry on successful verification.
     public Session verify()
     {
         if(System.currentTimeMillis() > this.expiry)
         {
             return null;
         }
+        this.expiry = System.currentTimeMillis() + 30 * 60 * 1000;
         return this;
     }
 

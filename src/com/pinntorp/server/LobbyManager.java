@@ -1,11 +1,10 @@
 package com.pinntorp.server;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 import java.security.SecureRandom;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class LobbyManager
@@ -20,7 +19,7 @@ public class LobbyManager
         this.random = new SecureRandom();
     }
 
-    public Lobby createLobby(String name)
+    public String createLobby(String name)
     {
         StringBuilder lobbyID = new StringBuilder(8);
         for(int i = 0; i < 6; i++)
@@ -29,22 +28,31 @@ public class LobbyManager
         }
         Lobby newLobby = new Lobby(lobbyID.toString(), name);
         this.lobbies.put(lobbyID.toString(), newLobby);
-        return newLobby;
+        return lobbyID.toString();
     }
 
-    public void joinLobby(int playerID, String lobbyID)
-    {
-        this.lobbies.get(lobbyID).addPlayer(playerID);
-    }
-
-    public void leaveLobby(int playerID, String lobbyID)
+    public boolean joinLobby(Session session, String lobbyID)
     {
         Lobby lobby = this.lobbies.get(lobbyID);
-        lobby.removePlayer(playerID);
-        if(lobby.isEmpty())
+        if(lobby != null)
         {
-            this.lobbies.remove(lobbyID);
+            lobby.addPlayer(session.getPlayerID());
+            session.setLobbyID(lobbyID);
+            return true;
         }
+        return false;
+    }
+
+    public boolean leaveLobby(Session session)
+    {
+        Lobby lobby = this.lobbies.get(session.getLobbyID());
+        if(lobby != null)
+        {
+            lobby.removePlayer(session.getPlayerID());
+            session.setLobbyID(null);
+            return true;
+        }
+        return false;
     }
 
     public Lobby getLobby(String id)
@@ -57,15 +65,15 @@ public class LobbyManager
         this.lobbies.remove(id);
     }
 
-    public List<JsonObject> listLobbies()
+    public JsonArray listLobbies()
     {
-        List<JsonObject> list = new LinkedList<>();
+        JsonArray array = new JsonArray();
         this.lobbies.forEach((String lobbyID, Lobby lobby) -> {
             JsonObject lobbyObject = new JsonObject();
             lobbyObject.add("lobbyID", new JsonPrimitive(lobbyID));
             lobbyObject.add("name", new JsonPrimitive(lobby.getName()));
-            list.add(lobbyObject);
+            array.add(lobbyObject);
         });
-        return list;
+        return array;
     }
 }

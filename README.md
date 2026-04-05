@@ -111,21 +111,31 @@ PiNNTORP/
 
 ### How to run
 
-**Option 1: Double-click (Windows):**
+**Option 1: Desktop (Windows):**
 
 ```
-start-server.bat
+Double-click start-server.bat
 ```
 
-**Option 2: Terminal:**
+**Option 2: Terminal (Linux/macOS/Windows WSL):**
+
+Ensure you have a JDK (Java 17+) installed and on your PATH, then run:
 
 ```bash
-python -m http.server 5500
+./start-server.sh
 ```
 
-Then open [http://localhost:5500](http://localhost:5500) in your browser.
+**Option 3: Docker (Containerized):**
 
-> The `start-server.bat` script automatically detects whether Python or Node.js is available and starts the appropriate server.
+If you have Docker and Docker Compose installed, you can launch the platform with a single command:
+
+```bash
+docker-compose up --build -d
+```
+
+Then open [http://localhost:8080](http://localhost:8080) in your browser.
+
+> Note: The unified Java server automatically serves the frontend assets and handles the API on port 8080.
 
 ---
 

@@ -36,9 +36,9 @@ public class Main
             // Create the HTTP server
             httpServer = HttpServer.create(new InetSocketAddress(5500), 0);
             httpServer.createContext("/login", new LoginHandler(userStore, sessionManager));
-            httpServer.createContext("/lobby", new LobbyHandler(userStore, lobbyManager));
-            httpServer.createContext("/friends", new FriendsHandler(userStore));
-            httpServer.createContext("/user", new UserHandler(userStore));
+            httpServer.createContext("/lobby", new LobbyHandler(sessionManager, lobbyManager));
+            httpServer.createContext("/friends", new FriendsHandler(userStore, sessionManager));
+            httpServer.createContext("/user", new UserHandler(userStore, sessionManager));
 
             // Create the WebSocket server
             wsServer = new WsServer(5555);

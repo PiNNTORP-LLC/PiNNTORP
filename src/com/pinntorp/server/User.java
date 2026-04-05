@@ -1,6 +1,5 @@
 package com.pinntorp.server;
 
-import java.security.SecureRandom;
 import java.util.*;
 
 public class User
@@ -124,9 +123,9 @@ public class User
         this.friends.add(friendID);
     }
 
-    public void removeFriend(int friendID)
+    public boolean removeFriend(int friendID)
     {
-        this.friends.remove(friendID);
+        return this.friends.remove(friendID);
     }
 
     /**
@@ -178,8 +177,8 @@ public class User
         return this.receivedFriendRequests.remove(friendID);
     }
 
-    public void cancelFriendRequest(int friendID)
+    public boolean cancelFriendRequest(int friendID)
     {
-        this.sentFriendRequests.remove(friendID);
+        return this.sentFriendRequests.remove(friendID);
     }
 }
