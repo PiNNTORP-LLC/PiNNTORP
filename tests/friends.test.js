@@ -58,7 +58,7 @@ function resetFriendPage(friendList = ["dummy_alice"]) {
     });
 }
 
-test("main_user already has dummy_alice on the friend list", () => {
+test("[REGRESS-01] main_user already has dummy_alice on the friend list", () => {
     resetFriendPage();
 
     const friends = getFriends();
@@ -67,18 +67,20 @@ test("main_user already has dummy_alice on the friend list", () => {
     assert.equal(friends[0], "dummy_alice");
 });
 
-test("default fallback state seeds all dummy users into main_user friends", () => {
+test("[REGRESS-02] default fallback state seeds all dummy users into main_user friends", () => {
     globalThis.localStorage.clear();
     replaceState(null);
 
     assert.deepEqual(state.users.main_user.friends, [
         "dummy_alice",
         "dummy_bob",
-        "dummy_charlie"
+        "dummy_charlie",
+        "dummy_dave",
+        "dummy_eve"
     ]);
 });
 
-test("ensureUserState creates a separate local profile for a signed-in username", () => {
+test("[REGRESS-03] ensureUserState creates a separate local profile for a signed-in username", () => {
     replaceState(null);
 
     const sessionUser = ensureUserState("casey");
@@ -92,11 +94,13 @@ test("ensureUserState creates a separate local profile for a signed-in username"
         "dummy_alice",
         "dummy_bob",
         "dummy_charlie",
+        "dummy_dave",
+        "dummy_eve",
         "main_user"
     ]);
 });
 
-test("blank text from the friend form is ignored", () => {
+test("[REGRESS-04] blank text from the friend form is ignored", () => {
     resetFriendPage();
 
     const worked = addFriend(" ");
@@ -106,7 +110,7 @@ test("blank text from the friend form is ignored", () => {
     assert.equal(globalThis.localStorage.getItem("pinntorp_state_v1"), null);
 });
 
-test("typing a username that does not exist shows the same alert the app uses", () => {
+test("[REGRESS-05] typing a username that does not exist shows the same alert the app uses", () => {
     resetFriendPage();
 
     const worked = addFriend("not_a_real_user");
@@ -116,7 +120,7 @@ test("typing a username that does not exist shows the same alert the app uses", 
     assert.deepEqual(getFriends(), ["dummy_alice"]);
 });
 
-test("typing a name that is not stored exactly in the user list does not change the friends list", () => {
+test("[REGRESS-06] typing a name that is not stored exactly in the user list does not change the friends list", () => {
     resetFriendPage();
 
     const worked = addFriend("DUMMY_ALICE");
@@ -126,7 +130,7 @@ test("typing a name that is not stored exactly in the user list does not change 
     assert.deepEqual(globalThis.alertHistory, ["User does not exist"]);
 });
 
-test("adding dummy_charlie updates both the in-memory state and the saved browser copy", () => {
+test("[UT-03] friends.js - Adding a friend adds them to the list", () => {
     resetFriendPage();
 
     assert.equal(state.users.main_user.friends.includes("dummy_charlie"), false);
@@ -141,7 +145,7 @@ test("adding dummy_charlie updates both the in-memory state and the saved browse
     assert.deepEqual(savedState.users.main_user.friends, ["dummy_alice", "dummy_charlie"]);
 });
 
-test("removing dummy_alice leaves main_user with no friends", () => {
+test("[UT-05] friends.js - Removing a friend removes them from the list", () => {
     resetFriendPage();
     removeFriend("dummy_alice");
 
@@ -151,7 +155,7 @@ test("removing dummy_alice leaves main_user with no friends", () => {
     assert.deepEqual(savedState.users.main_user.friends, []);
 });
 
-test("trying to remove dummy_charlie does nothing when only dummy_alice is on the list", () => {
+test("[REGRESS-07] trying to remove dummy_charlie does nothing when only dummy_alice is on the list", () => {
     resetFriendPage(["dummy_alice"]);
 
     const before = [...state.users.main_user.friends];

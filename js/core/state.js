@@ -84,7 +84,12 @@ export function ensureUserState(username) {
 
     const dummyUsers = getDummyUsers();
     for (const [dummyUsername, dummyUser] of Object.entries(dummyUsers)) {
-        state.users[dummyUsername] = dummyUser;
+        if (!state.users[dummyUsername]) {
+            state.users[dummyUsername] = dummyUser;
+            continue;
+        }
+
+        state.users[dummyUsername] = normalizeUser(state.users[dummyUsername]);
     }
 
     return state.users[username];

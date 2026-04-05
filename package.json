@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test"
+    "test": "node --test",
+    "test:stable": "node --test tests/friends.test.js tests/games.test.js tests/rec.test.js tests/stats.test.js tests/storage.test.js tests/unitCoverage.test.js tests/integrationCoverage.test.js tests/backendCoverage.test.js tests/systemCoverage.test.js tests/accountDeletion.test.js"
   }
 }

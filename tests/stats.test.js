@@ -36,7 +36,7 @@ beforeEach(() => {
     });
 });
 
-test("getStats returns the saved totals", () => {
+test("[REGRESS-10] getStats returns the saved totals", () => {
     assert.deepEqual(getStats(), {
         balance: 165,
         wins: 8,
@@ -47,7 +47,7 @@ test("getStats returns the saved totals", () => {
     });
 });
 
-test("getStats handles zero losses", () => {
+test("[UT-16] stats.js - Win/loss ratio does not error when no games have been played", () => {
     replaceState({
         currentUser: "main_user",
         users: {
@@ -73,7 +73,7 @@ test("getStats handles zero losses", () => {
     });
 });
 
-test("resetStats zeros everything out and keeps the friend list", () => {
+test("[UT-18] stats.js - No leftover data remains after resetting stats", () => {
     resetStats();
 
     assert.deepEqual(getStats(), {
