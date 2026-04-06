@@ -27,7 +27,7 @@
 
 ## Overview
 
-PiNNTORP is a web-based gambling platform. Users can play 3 different gambling games, track their win/loss statistics, manage their own friends list, and receive personalized game recommendations. Everything is stored locally in the browser.
+PiNNTORP is a web-based gambling platform. Users can play 4 different gambling games, track their win/loss statistics, manage their own friends list, and receive personalized game recommendations. Everything is stored locally in the browser.
 
 ---
 
@@ -38,42 +38,66 @@ PiNNTORP is a web-based gambling platform. Users can play 3 different gambling g
 | Dice Roll game | Implemented |
 | Slot Machine game | Implemented |
 | Coin Flip game | Implemented |
-| Friends list (add/remove) | Implemented |
+| Blackjack game | Implemented |
+| Friends list (add/remove/request) | Implemented |
 | Player statistics & win/loss ratio | Implemented |
-| Player balance | Implemented |
+| Player balance & Earn tab | Implemented |
 | Game recommendation algorithm | Implemented |
-| Account deletion | In Progress (Iteration 3) |
+| Global leaderboard | Implemented |
+| Game history on profile | Implemented |
+| Account deletion | Implemented |
 
 ---
 ## Screenshots
 
+### Login & Sign Up
+
+<p align="center">
+  <img src="resources/images/iteration3_1.png" alt="Login page" width="350">
+  <img src="resources/images/iteration3_2.png" alt="Sign up page" width="350">
+</p>
 
 ### Home Page
 
 <p align="center">
-  <img src="resources/images/iteration2_1.png" alt="Home page" width="700">
+  <img src="resources/images/iteration3_3.png" alt="Home page — fresh account" width="700">
+</p>
+
+<p align="center">
+  <img src="resources/images/iteration3_11.png" alt="Home page — account with history" width="700">
 </p>
 
 ### Games Tab
 
 <p align="center">
-  <img src="resources/images/iteration2_2.png" alt="Games tab slots initial" width="350">
-  <img src="resources/images/iteration2_3.png" alt="Games tab dice initial" width="350">
-  <img src="resources/images/iteration2_4.png" alt="Games tab coin flip initial" width="350">
-  <img src="resources/images/iteration2_8.png" alt="Games tab slots active" width="350">
+  <img src="resources/images/iteration3_4.png" alt="Slots" width="350">
+  <img src="resources/images/iteration3_5.png" alt="Dice Roll" width="350">
+  <img src="resources/images/iteration3_6.png" alt="Coin Flip" width="350">
+  <img src="resources/images/iteration3_7.png" alt="Blackjack" width="350">
+</p>
+
+<p align="center">
+  <img src="resources/images/iteration3_12.png" alt="Slots — account with history and recommendations" width="700">
+</p>
+
+### Earn Tab
+
+<p align="center">
+  <img src="resources/images/iteration3_8.png" alt="Earn tab" width="700">
 </p>
 
 ### Friends Tab
 
 <p align="center">
-  <img src="resources/images/iteration2_5.png" alt="Friends tab initial" width="350">
-  <img src="resources/images/iteration2_7.png" alt="Friends tab with friends" width="350">
+  <img src="resources/images/iteration3_9.png" alt="Friends tab — fresh account" width="350">
+  <img src="resources/images/iteration3_13.png" alt="Friends tab — with friends and pending request" width="350">
 </p>
 
 ### Profile Tab
 
 <p align="center">
-  <img src="resources/images/iteration2_6.png" alt="Profile tab initial" width="350">
+  <img src="resources/images/iteration3_10.png" alt="Profile tab — fresh account" width="350">
+  <img src="resources/images/iteration3_14.png" alt="Profile tab — with game history and stats" width="350">
 </p>
 
 
@@ -195,7 +219,7 @@ All contributors are expected to branch off `develop`, and merge back into `deve
 | 3 | Mar 24 - Apr 6, 2026 | Polish & wrap-up | Account deletion, documentation, final testing |
 
 **Team velocity:** `26 developer days per iteration`  
-**Iteration capacity:** `35 developer days (5 devs * 14 days * 0.5 availability factor)`
+**Iteration capacity:** `28 developer days (4 devs * 14 days * 0.5 availability factor)`
 
 ---
 
@@ -204,10 +228,9 @@ All contributors are expected to branch off `develop`, and merge back into `deve
 | Name | Role |
 |------|------|
 | Eric Beaulne | Project Manager |
-| Mele Felix | Technical Manager |
 | Adrian Ahmadi | Front-End Lead |
 | Nikola Grujin | Back-End Lead |
-| Hayden Dunn | Software Quality Lead |
+| Hayden Dunn | Software Quality Lead & Technical Manager |
 
 ---
 

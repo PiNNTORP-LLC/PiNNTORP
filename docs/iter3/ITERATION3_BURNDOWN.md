@@ -17,11 +17,11 @@ Iteration 3 length: **14d**
 | 6 | 2026-03-30 | 13.5 | 6.5 | Account deletion implementation |
 | 7 | 2026-03-31 | 11.5 | 6.5 | Account deletion + testing |
 | 8 | 2026-04-01 | 9.6 | 3.6 | Account deletion complete; docs progress |
-| 9 | 2026-04-02 | 7.7 | 2.8 | Full test suite progress |
+| 9 | 2026-04-02 | 7.7 | 2.8 | Full test suite progress + global leaderboard implementation |
 | 10 | 2026-04-03 | 5.8 | 1.8 | Documentation review + polishing wrap-up |
-| 11 | 2026-04-04 | 3.8 | 0.9 | Final integration testing |
-| 12 | 2026-04-05 | 1.9 | - | Lab 11 prep |
-| 13 | 2026-04-06 | 0.0 | - | Iteration complete, prepare for delivery. |
+| 11 | 2026-04-04 | 3.8 | 1.7 | Final integration testing |
+| 12 | 2026-04-05 | 1.9 | 0.6 | Lab 11 prep |
+| 13 | 2026-04-06 | 0.0 | 0.0 | Iteration complete, prepare for delivery. |
 
 The formula used to estimate the actual remaining days is `remaining_days = total_days * (1 - percent_complete / 100)`.
 ## Burndown Plot
@@ -30,9 +30,9 @@ The formula used to estimate the actual remaining days is `remaining_days = tota
 
 ## Updated Velocity
 
-Iteration in progress. As of **2026-04-04** (day 11), **0.9 developer days** remain out of **25** planned.
-The team has completed **24 developer days** of tracked work so far.
+The burndown started with **25 developer days** of tracked implementation work and reached **0.0 developer days remaining** on **2026-04-06**.
+That means the team completed **25 developer days** of tracked work during Iteration 3.
 
-`Projected velocity = 24 developer days (partial, day 11 of 13)`
+`Updated velocity = 25 developer days per iteration`
 
-Using the baseline team capacity of **4 developers x 14 days x 0.5 availability = 28 developer days**, the tracked implementation work used about **86%** of total iteration capacity.
+Using the baseline team capacity of **4 developers x 14 days x 0.5 availability = 28 developer days**, the tracked implementation work used about **89%** of total iteration capacity.
