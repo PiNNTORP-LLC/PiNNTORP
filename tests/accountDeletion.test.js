@@ -1,98 +1,173 @@
-// import test, { beforeEach } from "node:test";
-// import assert from "node:assert/strict";
+import test, { beforeEach } from "node:test";
+import assert from "node:assert/strict";
 
-// import { ensureUserState, state, replaceState } from "../js/core/state.js";
-// import { deleteCurrentAccount } from "../js/account/account.js";
+import { deleteCurrentAccount } from "../js/account/account.js";
+import { replaceState, state } from "../js/core/state.js";
 
-// globalThis.localStorage = {
-//     data: {},
-//     clear() {
-//         this.data = {};
-//     },
-//     getItem(key) {
-//         return this.data[key] ?? null;
-//     },
-//     setItem(key, value) {
-//         this.data[key] = String(value);
-//     }
-// };
+globalThis.localStorage = {
+    data: {},
+    clear() {
+        this.data = {};
+    },
+    getItem(key) {
+        return this.data[key] ?? null;
+    },
+    setItem(key, value) {
+        this.data[key] = String(value);
+    },
+    removeItem(key) {
+        delete this.data[key];
+    }
+};
 
-// function seedAccountState() {
-//     replaceState({
-//         currentUser: "main_user",
-//         users: {
-//             main_user: {
-//                 gamesPlayed: 12,
-//                 wins: 8,
-//                 losses: 4,
-//                 profit: 65,
-//                 friends: ["dummy_alice", "dummy_bob"],
-//                 favoriteGames: ["Slots"]
-//             },
-//             dummy_alice: {
-//                 gamesPlayed: 6,
-//                 wins: 4,
-//                 losses: 2,
-//                 profit: 15,
-//                 friends: ["main_user"],
-//                 favoriteGames: ["Slots"]
-//             },
-//             dummy_bob: {
-//                 gamesPlayed: 9,
-//                 wins: 3,
-//                 losses: 6,
-//                 profit: -10,
-//                 friends: ["main_user", "dummy_alice"],
-//                 favoriteGames: ["Dice Roll"]
-//             }
-//         }
-//     });
-// }
+function seedAccountState(currentUser = "main_user") {
+    replaceState({
+        currentUser,
+        users: {
+            main_user: {
+                balance: 125,
+                gamesPlayed: 12,
+                wins: 8,
+                losses: 4,
+                profit: 25,
+                friends: ["dummy_alice", "dummy_bob"],
+                favoriteGames: ["Slots"],
+                history: [{ game: "Slots", delta: 7, ts: 1 }]
+            },
+            dummy_alice: {
+                balance: 90,
+                gamesPlayed: 6,
+                wins: 4,
+                losses: 2,
+                profit: 15,
+                friends: ["main_user"],
+                favoriteGames: ["Slots"],
+                history: []
+            },
+            dummy_bob: {
+                balance: 80,
+                gamesPlayed: 9,
+                wins: 3,
+                losses: 6,
+                profit: -10,
+                friends: ["main_user", "dummy_alice"],
+                favoriteGames: ["Dice Roll"],
+                history: []
+            }
+        }
+    });
+}
 
-// beforeEach(() => {
-//     globalThis.localStorage.clear();
-//     seedAccountState();
-// });
+beforeEach(() => {
+    globalThis.localStorage.clear();
+    seedAccountState();
+    globalThis.fetch = async () => ({
+        ok: true,
+        async json() {
+            return { status: "success" };
+        }
+    });
+});
 
-// test("ensureUserState adds a new signed-in user without reusing main_user stats", () => {
-//     const sessionUser = ensureUserState("new_user");
-//     sessionUser.wins = 9;
+test("[UT-10] account.js - Deleting an account removes it from storage", async () => {
+    const deletedUsername = await deleteCurrentAccount();
+    const savedState = JSON.parse(globalThis.localStorage.getItem("pinntorp_state_v1"));
 
-//     assert.equal(state.users.new_user.wins, 9);
-//     assert.equal(state.users.main_user.wins, 8);
-// });
+    assert.equal(deletedUsername, "main_user");
+    assert.equal(state.users.main_user, undefined);
+    assert.equal(savedState.users.main_user, undefined);
+});
 
-// test("red: deleting the current account removes that user from the state", () => {
-//     const deletedUsername = deleteCurrentAccount();
+test("[UT-11] account.js - Deleting an account removes the user from all friend lists", async () => {
+    await deleteCurrentAccount();
 
-//     assert.equal(deletedUsername, "main_user");
-//     assert.equal(state.users.main_user, undefined);
-//     assert.equal(state.currentUser, null);
-// });
+    assert.deepEqual(state.users.dummy_alice.friends, []);
+    assert.deepEqual(state.users.dummy_bob.friends, ["dummy_alice"]);
+});
 
-// test("deleting the current account also removes that username from every remaining friend list", () => {
-//     deleteCurrentAccount();
+test("[UT-12] account.js - Deleting an account that does not exist returns an error", async () => {
+    state.currentUser = null;
 
-//     assert.deepEqual(state.users.dummy_alice.friends, []);
-//     assert.deepEqual(state.users.dummy_bob.friends, ["dummy_alice"]);
-// });
+    await assert.rejects(async () => {
+        await deleteCurrentAccount();
+    }, /No user logged in/);
+});
 
-// test("deleting the current account persists the updated users map to localStorage", () => {
-//     deleteCurrentAccount();
+test("[UT-19] account.js - No leftover data remains in storage after deleting an account", async () => {
+    await deleteCurrentAccount();
 
-//     const savedState = JSON.parse(globalThis.localStorage.getItem("pinntorp_state_v1"));
-//     assert.equal(savedState.currentUser, null);
-//     assert.equal(savedState.users.main_user, undefined);
-//     assert.deepEqual(savedState.users.dummy_alice.friends, []);
-//     assert.deepEqual(savedState.users.dummy_bob.friends, ["dummy_alice"]);
-// });
+    const savedState = JSON.parse(globalThis.localStorage.getItem("pinntorp_state_v1"));
+    assert.equal(savedState.currentUser, null);
+    assert.equal(savedState.users.main_user, undefined);
+    assert.deepEqual(savedState.users.dummy_alice.friends, []);
+    assert.deepEqual(savedState.users.dummy_bob.friends, ["dummy_alice"]);
+});
 
-import test from "node:test";
+test("[IT-11] LoginHandler + UserStore - User data is cleaned up properly after registering then deleting an account", async () => {
+    replaceState({
+        currentUser: "fresh_user",
+        users: {
+            fresh_user: {
+                balance: 100,
+                gamesPlayed: 1,
+                wins: 1,
+                losses: 0,
+                profit: 6,
+                friends: [],
+                favoriteGames: ["Coin Flip"],
+                history: [{ game: "Coin Flip", delta: 6, ts: 2 }]
+            },
+            dummy_alice: {
+                balance: 90,
+                gamesPlayed: 6,
+                wins: 4,
+                losses: 2,
+                profit: 15,
+                friends: ["fresh_user"],
+                favoriteGames: ["Slots"],
+                history: []
+            }
+        }
+    });
 
-test.todo("[UT-10] deleting an account removes it from storage");
-test.todo("[UT-11] deleting an account removes the user from all friend lists");
-test.todo("[UT-12] deleting an account that does not exist returns an error");
-test.todo("[UT-19] no leftover data remains in storage after deleting an account");
-test.todo("[IT-11] user data is cleaned up properly after registering then deleting an account");
-test.todo("[ST-08] delete an account and verify login is rejected afterward");
-test.todo("[ST-09] delete a friend and verify they disappear from the friend list");
+    await deleteCurrentAccount();
+
+    assert.equal(state.currentUser, null);
+    assert.equal(state.users.fresh_user, undefined);
+    assert.deepEqual(state.users.dummy_alice.friends, []);
+});
+
+test("[ST-08] Account Deletion - Delete an account and verify login is rejected afterward", async () => {
+    globalThis.localStorage.setItem("jwt", "header.payload.signature");
+    globalThis.localStorage.setItem("friendsSession", JSON.stringify({ sessionID: "abc", playerID: 1 }));
+
+    let requestCount = 0;
+    globalThis.fetch = async (url, options) => {
+        requestCount += 1;
+        assert.equal(url, "http://localhost:8080/api/user/delete");
+        assert.equal(options.method, "POST");
+        assert.equal(options.headers.Authorization, "Bearer header.payload.signature");
+        return {
+            ok: true,
+            async json() {
+                return { status: "success" };
+            }
+        };
+    };
+
+    await deleteCurrentAccount();
+
+    assert.equal(requestCount, 1);
+    assert.equal(globalThis.localStorage.getItem("jwt"), null);
+    assert.equal(globalThis.localStorage.getItem("friendsSession"), null);
+    assert.equal(state.currentUser, null);
+});
+
+test("[ST-09] Deleted User Removed from Friend List - Delete your friend who is in your friend list", async () => {
+    state.currentUser = "dummy_alice";
+
+    await deleteCurrentAccount();
+
+    assert.equal(state.users.dummy_alice, undefined);
+    assert.deepEqual(state.users.main_user.friends, ["dummy_bob"]);
+});

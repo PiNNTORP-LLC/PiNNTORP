@@ -40,6 +40,11 @@ echo ----------------------------------------
 node --test tests\integrationCoverage.test.js
 echo.
 
+echo.
+echo [INTEGRATION] Account Deletion Coverage
+echo ----------------------------------------
+node --test tests\accountDeletion.test.js
+
 echo [BACKEND] Documented Java and Auth Coverage
 echo ----------------------------------------
 node --test tests\backendCoverage.test.js
@@ -48,11 +53,6 @@ echo.
 echo [SYSTEM] Documented System Coverage
 echo ----------------------------------------
 node --test tests\systemCoverage.test.js
-
-echo.
-echo [TODO] Account Deletion Coverage
-echo ----------------------------------------
-node --test tests\accountDeletion.test.js
 
 echo.
 pause
