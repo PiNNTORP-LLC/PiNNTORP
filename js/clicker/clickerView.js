@@ -165,8 +165,6 @@ function installUnloadFlush() {
     }, { once: true });
 }
 
-// ── Local balance helpers ─────────────────────────────────────────────────────
-
 function addLocal(amount) {
     const user = state.users[state.currentUser];
     if (!user) {
@@ -178,8 +176,6 @@ function addLocal(amount) {
     renderBalance();
 }
 
-// ── Floating "+$X" label animation ───────────────────────────────────────────
-
 function spawnFloat(x, y, amount) {
     const el = document.createElement('span');
     el.className = 'clicker-float';
@@ -189,8 +185,6 @@ function spawnFloat(x, y, amount) {
     document.body.appendChild(el);
     el.addEventListener('animationend', () => el.remove(), { once: true });
 }
-
-// ── Main export ───────────────────────────────────────────────────────────────
 
 export function initClickerView() {
     const coinEl = document.getElementById('clicker-coin');
@@ -208,8 +202,6 @@ export function initClickerView() {
     let sessionEarned = 0;
     let lastClick = 0; // timestamp of last accepted click
 
-    // ── Derived stats ──────────────────────────────────────────────────────
-
     const getCPC = () =>
         1 + UPGRADES.filter(u => cs.upgrades.includes(u.id))
             .reduce((s, u) => s + u.cpc, 0);
@@ -220,8 +212,6 @@ export function initClickerView() {
         const balance = getBalance();
         return balance >= CLICKER_BALANCE_CAP || (balance + getCPC()) > CLICKER_BALANCE_CAP;
     };
-
-    // ── UI helpers ──────────────────────────────────────────────────────────
 
     function updateStats() {
         if (cpcEl) {
@@ -282,8 +272,7 @@ export function initClickerView() {
         });
     }
 
-    // ── Upgrade purchase ────────────────────────────────────────────────────
-
+    // Upgrade purchase
     async function buyUpgrade(id) {
         const u = UPGRADES.find(x => x.id === id);
         if (!u || cs.upgrades.includes(id)) {
@@ -309,8 +298,7 @@ export function initClickerView() {
         await syncToServer(-u.cost);
     }
 
-    // ── Click handler ───────────────────────────────────────────────────────
-
+    // Handle clicks on the coin
     coinEl.addEventListener('click', e => {
         if (isClickBlockedByCap()) {
             updateClickerAvailability();
@@ -351,14 +339,12 @@ export function initClickerView() {
         }
     });
 
-    // ── Periodic server sync ────────────────────────────────────────────────
-
+    // Initial cooldown state (in case user reloads during cooldown)
     const flushId = setInterval(flushEarnings, FLUSH_INTERVAL_MS);
     window.addEventListener('beforeunload', () => clearInterval(flushId), { once: true });
     installUnloadFlush();
 
-    // ── Initial render ──────────────────────────────────────────────────────
-
+    // Initial render
     updateStats();
     renderUpgrades();
     updateClickerAvailability();
