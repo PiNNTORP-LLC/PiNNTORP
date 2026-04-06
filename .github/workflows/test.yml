@@ -19,5 +19,5 @@ jobs:
       with:
         node-version: '18.x'
 
-    - name: Run JavaScript Unit Tests
-      run: npm test
+    - name: Run JavaScript Test Plan Suite
+      run: npm run test:stable
