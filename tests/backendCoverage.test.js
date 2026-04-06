@@ -81,8 +81,9 @@ test("[IT-12] friends operations require a valid session", () => {
 });
 
 test("[ST-06] unauthenticated users are redirected away from protected pages", () => {
-    assert.match(appSource, /\(_page === "games\.html" \|\| _page === "profile\.html" \|\| _page === "coin\.html"\) && !isLoggedIn\(\)/);
-    assert.match(appSource, /window\.location\.replace\("index\.html"\)/);
+    assert.match(appSource, /const _protectedPages = \["index\.html", "games\.html", "profile\.html", "coin\.html", "friends\.html"\]/);
+    assert.match(appSource, /if \(_protectedPages\.includes\(_page\) && !isLoggedIn\(\)\)/);
+    assert.match(appSource, /window\.location\.replace\("login\.html"\)/);
 });
 
 test("[ST-07] session persistence uses the stored jwt on app startup", () => {

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 const indexSource = readFileSync("index.html", "utf8");
+const loginSource = readFileSync("login.html", "utf8");
 const gamesSource = readFileSync("games.html", "utf8");
 const profileSource = readFileSync("profile.html", "utf8");
 const authSource = readFileSync("js/core/auth.js", "utf8");
@@ -11,13 +12,13 @@ const statsViewSource = readFileSync("js/stats/statsView.js", "utf8");
 const appSource = readFileSync("js/app.js", "utf8");
 
 test("[ST-01] open app and register a new user", () => {
-    assert.match(indexSource, /id="register-form"/);
-    assert.match(indexSource, /id="reg-username-input"/);
+    assert.match(loginSource, /id="register-form"/);
+    assert.match(loginSource, /id="reg-username-input"/);
     assert.match(authSource, /export async function registerUser/);
 });
 
 test("[ST-02] login, play slots, bet, and verify balance updates", () => {
-    assert.match(indexSource, /id="login-form"/);
+    assert.match(loginSource, /id="login-form"/);
     assert.match(gamesSource, /id="slots-game"/);
     assert.match(gamesSource, /id="slot-roll"/);
     assert.match(statsViewSource, /document\.getElementById\("balance-value"\)/);
