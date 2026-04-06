@@ -3377,3 +3377,24 @@ li {
     background: linear-gradient(135deg, #3a3015, #2a2210);
     box-shadow: 0 0 10px rgba(212, 175, 55, 0.18);
 }
+
+/* === LOGIN PAGE === */
+
+@media (min-width: 901px) {
+    body.login-page {
+        padding-left: 1.25rem;
+    }
+}
+
+.login-page-main {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 4rem 1rem;
+    min-height: calc(100vh - 80px);
+}
+
+.login-page-main .auth-panel {
+    width: 100%;
+    max-width: 420px;
+}

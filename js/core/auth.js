@@ -158,7 +158,7 @@ function _renderHeaderChip() {
 
     } else {
         chip.innerHTML = `
-            <a href="index.html" class="hu-btn hu-btn--guest" aria-label="Log in">
+            <a href="login.html" class="hu-btn hu-btn--guest" aria-label="Log in">
                 ${_ICON_USER}
             </a>`;
     }
@@ -175,6 +175,14 @@ function _applyAuthPanelState() {
     if (!panel) {
         return;
     }
+
+    // On the dedicated login page, redirect to home if already authenticated
+    const _isLoginPage = window.location.pathname.split('/').pop() === 'login.html';
+    if (isLoggedIn() && _isLoginPage) {
+        window.location.replace('index.html');
+        return;
+    }
+
     panel.classList.toggle("hidden", isLoggedIn());
 
     // If arriving via #signup link, skip straight to the register form
@@ -225,7 +233,12 @@ function _initAuthForms() {
             loginForm.password.value
         );
         if (data.success) {
-            window.location.reload();
+            const _page = window.location.pathname.split('/').pop();
+            if (_page === 'login.html') {
+                window.location.replace('index.html');
+            } else {
+                window.location.reload();
+            }
         } else {
             if (authMessage) {
                 authMessage.textContent = data.message || "Invalid username or password.";

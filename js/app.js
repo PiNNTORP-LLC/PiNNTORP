@@ -102,8 +102,8 @@ const PAGE_LINKS = [
             <div class="nav-guest-card">
                 <p class="nav-guest-label">Not signed in</p>
                 <div class="nav-guest-actions">
-                    <a class="nav-guest-btn nav-guest-btn--primary" href="index.html">${NAV_ICONS.login}<span>Log In</span></a>
-                    <a class="nav-guest-btn nav-guest-signup" href="index.html#signup">${NAV_ICONS.profile}<span>Sign Up</span></a>
+                    <a class="nav-guest-btn nav-guest-btn--primary" href="login.html">${NAV_ICONS.login}<span>Log In</span></a>
+                    <a class="nav-guest-btn nav-guest-signup" href="login.html#signup">${NAV_ICONS.profile}<span>Sign Up</span></a>
                 </div>
             </div>`;
     }
@@ -129,7 +129,7 @@ const PAGE_LINKS = [
     const openBtn = document.getElementById('nav-open');
     const profileCard = document.getElementById('nav-profile-card');
     const trigger = document.getElementById('nav-profile-trigger');
-    const dropdown = document.getElementById('nav-profile-dropdown');
+
     const logoutBtn = document.getElementById('nav-logout-btn');
 
     const open = () => {
@@ -162,16 +162,7 @@ const PAGE_LINKS = [
     logoutBtn?.addEventListener('click', () => { logoutUser(); window.location.reload(); });
 
     const signupLink = panel.querySelector('.nav-guest-signup');
-    signupLink?.addEventListener('click', e => {
-        const loginContainer = document.getElementById('login-container');
-        const regContainer = document.getElementById('register-container');
-        if (regContainer) {
-            e.preventDefault();
-            loginContainer?.classList.add('auth-panel-hidden');
-            regContainer?.classList.remove('auth-panel-hidden');
-            close();
-        }
-    });
+    signupLink?.addEventListener('click', () => { close(); });
 }
 
 // Inject the persistent 3-column sidebar layout around each page's content.
@@ -254,10 +245,11 @@ function initLayout() {
 initAuthUI();
 initNavPanel();
 
-// Protect game and profile pages - redirect to home if not logged in
+// Protect game, profile, and social pages - redirect to login if not logged in
 const _page = window.location.pathname.split("/").pop() || "index.html";
-if ((_page === "games.html" || _page === "profile.html" || _page === "coin.html") && !isLoggedIn()) {
-    window.location.replace("index.html");
+const _protectedPages = ["index.html", "games.html", "profile.html", "coin.html", "friends.html"];
+if (_protectedPages.includes(_page) && !isLoggedIn()) {
+    window.location.replace("login.html");
 }
 
 // Restore the last local snapshot first
