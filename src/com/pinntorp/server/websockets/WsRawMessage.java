@@ -1,4 +1,4 @@
-package com.pinntorp.WebSockets;
+package com.pinntorp.server.websockets;
 
 import java.nio.charset.StandardCharsets;
 
@@ -6,12 +6,12 @@ import java.nio.charset.StandardCharsets;
  * This class acts as an object for packaging data and opcode, representing
  * a received WebSocket message.
  */
-public class Message
+public class WsRawMessage
 {
     private byte[] data;
     private int opcode;
 
-    public Message(byte[] data, int opcode)
+    public WsRawMessage(byte[] data, int opcode)
     {
         this.data = data;
         this.opcode = opcode;

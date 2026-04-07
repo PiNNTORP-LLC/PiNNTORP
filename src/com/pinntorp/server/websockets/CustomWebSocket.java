@@ -1,4 +1,4 @@
-package com.pinntorp.WebSockets;
+package com.pinntorp.server.websockets;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,7 +19,7 @@ import java.util.Base64;
  * https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_servers
  * https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
  */
-public class WebSocket {
+public class CustomWebSocket {
 
     private Socket socket;
     private OutputStream output;
@@ -29,13 +29,13 @@ public class WebSocket {
 
     /**
      * Creates a WebSocket connection over a socket.
-     * 
+     *
      * @param socket  the TCP socket to use
      * @param headers the HTTP headers from the upgrade request
      * @throws IOException              if an I/O error occurs
      * @throws NoSuchAlgorithmException if SHA-1 is missing
      */
-    public WebSocket(Socket socket, java.util.Map<String, String> headers)
+    public CustomWebSocket(Socket socket, java.util.Map<String, String> headers)
             throws IOException, NoSuchAlgorithmException {
         this.socket = socket;
         this.output = socket.getOutputStream();
@@ -68,7 +68,7 @@ public class WebSocket {
         return this.open;
     }
 
-    public Message receive() {
+    public WsRawMessage receive() {
         if (!this.open)
             return null;
 
@@ -137,7 +137,7 @@ public class WebSocket {
             this.open = false;
         }
 
-        return new Message(message, opcode);
+        return new WsRawMessage(message, opcode);
     }
 
     public void send(byte[] message, byte[] maskingKey, boolean masked, int opcode) {

@@ -1,8 +1,9 @@
-package com.pinntorp.Server.Api;
+package com.pinntorp.server.Api;
 
-import com.pinntorp.Server.Console;
-import com.pinntorp.Server.Database;
-import com.pinntorp.WebSockets.WebSocket;
+import com.pinntorp.server.Console;
+import com.pinntorp.server.Database;
+import com.pinntorp.server.websockets.CustomWebSocket;
+import com.pinntorp.server.websockets.WsRawMessage;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -99,13 +100,15 @@ public class ConnectionHandler extends Thread {
             int b;
             int last1 = -1, last2 = -1, last3 = -1, last4 = -1;
 
-            // Read the raw headers until the request terminator is reached
+            // Read the HTTP request headers manually until "\r\n\r\n"
             while ((b = in.read()) != -1) {
                 headerBuffer.write(b);
                 last4 = last3;
                 last3 = last2;
                 last2 = last1;
                 last1 = b;
+
+                // Check if we reached the "\r\n\r\n" (13, 10, 13, 10)
                 if (last4 == 13 && last3 == 10 && last2 == 13 && last1 == 10) break;
             }
 
@@ -125,6 +128,8 @@ public class ConnectionHandler extends Thread {
 
             String method = requestParts[0];
             String path = requestParts[1];
+
+            // Parse headers into a map
             Map<String, String> headers = new HashMap<>();
             for (int i = 1; i < lines.length; i++) {
                 if (lines[i].isEmpty()) break;
@@ -138,11 +143,13 @@ public class ConnectionHandler extends Thread {
             String verifiedUsername = null;
             Database.UserData user = null;
 
-            // Route WebSocket upgrades to the WebSocket handler
+            // Route 1: WebSocket Upgrade with Auth verification
             if ("websocket".equalsIgnoreCase(headers.get("Upgrade"))) {
-                WebSocket ws = new WebSocket(socket, headers);
+                // If you wanted to do handshake auth, you could read the token query param here
+                // For now allow standard WS connection
+                CustomWebSocket ws = new CustomWebSocket(socket, headers);
                 while (ws.isOpen()) {
-                    com.pinntorp.WebSockets.Message msg = ws.receive();
+                    WsRawMessage msg = ws.receive();
                     if (msg != null && msg.getOpcode() == 1) {
                         Console.log("[WS] Received: " + msg.getString());
                     }
@@ -150,22 +157,22 @@ public class ConnectionHandler extends Thread {
                 return;
             }
 
-            // Register a new user
+            // Route 2: Register specific user
             if (path.startsWith("/api/register") && method.equals("POST")) {
                 int contentLen = Integer.parseInt(headers.getOrDefault("Content-Length", "0"));
                 String body = getRequestBody(in, contentLen);
-                String user = extractJsonString(body, "username");
+                String username = extractJsonString(body, "username");
                 String pass = extractJsonString(body, "password");
-                String role = extractJsonString(body, "role");
+                String role = extractJsonString(body, "role"); // Could be null, defaults "user"
 
-                if (user == null || pass == null) {
+                if (username == null || pass == null) {
                     sendJsonResponse(out, 400, "{\"status\":\"error\",\"message\":\"Username and password required.\"}");
-                } else if (Database.users.containsKey(user)) {
+                } else if (Database.users.containsKey(username)) {
                     sendJsonResponse(out, 400, "{\"status\":\"error\",\"message\":\"User already exists.\"}");
                 } else {
                     String salt = AuthHelper.generateSalt();
                     String hash = AuthHelper.hashPassword(pass, salt);
-                    Database.users.put(user, new Database.UserData(user, role == null ? "user" : role, salt, hash));
+                    Database.users.put(username, new Database.UserData(username, role == null ? "user" : role, salt, hash));
                     Database.save();
                     sendJsonResponse(out, 201, "{\"status\":\"success\",\"message\":\"Registered successfully.\"}");
                 }
@@ -173,17 +180,18 @@ public class ConnectionHandler extends Thread {
                 return;
             }
 
-            // Log in and return a JWT
+            // Route 3: Login to get token
             if (path.startsWith("/api/login") && method.equals("POST")) {
                 int contentLen = Integer.parseInt(headers.getOrDefault("Content-Length", "0"));
                 String body = getRequestBody(in, contentLen);
-                String user = extractJsonString(body, "username");
+                String username = extractJsonString(body, "username");
                 String pass = extractJsonString(body, "password");
-                Database.UserData userData = Database.users.get(user);
+                Database.UserData userData = Database.users.get(username);
 
-                if (user != null && pass != null && userData != null
+                if (username != null && pass != null && userData != null
                     && AuthHelper.verifyPassword(pass, userData.salt, userData.hash)) {
-                    String jwt = AuthHelper.generateJWT(user, userData.role);
+                    // Valid password! Grant JWT
+                    String jwt = AuthHelper.generateJWT(username, userData.role);
                     sendJsonResponse(out, 200, "{\"status\":\"success\",\"token\":\"" + jwt + "\"}");
                 } else {
                     sendJsonResponse(out, 401, "{\"status\":\"error\",\"message\":\"Invalid username or password.\"}");
@@ -192,7 +200,7 @@ public class ConnectionHandler extends Thread {
                 return;
             }
 
-            // Return the current users saved stats
+            // Route 4: API HTTP Route (Fetch User State)
             if (path.startsWith("/api/state") && method.equals("GET")) {
                 if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                     sendJsonResponse(out, 403, "{\"status\":\"error\",\"message\":\"Missing JWT Authorization header.\"}");
@@ -217,7 +225,7 @@ public class ConnectionHandler extends Thread {
                 return;
             }
 
-            // Run a slots round on the server
+            // Route 5: Gamble API (Requires JWT)
             if (path.startsWith("/api/gamble") && method.equals("POST")) {
                 if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                     sendJsonResponse(out, 403, "{\"status\":\"error\",\"message\":\"Missing JWT Authorization header.\"}");
@@ -233,10 +241,11 @@ public class ConnectionHandler extends Thread {
                     return;
                 }
 
+                // Token is good, determine slot game result
                 int firstNum = (int) (Math.random() * 7) + 1;
                 int secNum = (int) (Math.random() * 7) + 1;
                 int thirdNum = (int) (Math.random() * 7) + 1;
-                int profit = -5;
+                int profit = -5; // base loss
                 if (firstNum == secNum && secNum == thirdNum) {
                     profit = firstNum * 7;
                 } else if (firstNum == secNum || firstNum == thirdNum || secNum == thirdNum) {
@@ -258,7 +267,7 @@ public class ConnectionHandler extends Thread {
                 return;
             }
 
-            // Run a dice round on the server
+            // Route 6: Dice API (Requires JWT)
             if (path.startsWith("/api/dice") && method.equals("POST")) {
                 if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                     sendJsonResponse(out, 403, "{\"status\":\"error\",\"message\":\"Missing JWT Authorization header.\"}");
@@ -302,7 +311,7 @@ public class ConnectionHandler extends Thread {
                 return;
             }
 
-            // Sync a completed blackjack round to the server
+            // Route 6b: Blackjack result sync API (Requires JWT)
             if (path.startsWith("/api/blackjack") && method.equals("POST")) {
                 if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                     sendJsonResponse(out, 403, "{\"status\":\"error\",\"message\":\"Missing JWT Authorization header.\"}");
@@ -367,6 +376,7 @@ public class ConnectionHandler extends Thread {
                 return;
             }
 
+            // Route: Friends API (Requires JWT)
             if (path.startsWith("/api/friends") && method.equals("POST")) {
                 if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                     sendJsonResponse(out, 403, "{\"status\":\"error\",\"message\":\"Missing JWT Authorization header.\"}");
@@ -495,7 +505,97 @@ public class ConnectionHandler extends Thread {
                 return;
             }
 
-            // Serve static files from the project root
+            // Route 7: Clicker Earn/Spend API (Requires JWT)
+            // Accepts {"amount": N} - positive = earning from clicks, negative = upgrade purchase.
+            // Server caps: earn max 500 per call, spend max 15000 per call.
+            if (path.startsWith("/api/earn") && method.equals("POST")) {
+                if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                    sendJsonResponse(out, 403, "{\"status\":\"error\",\"message\":\"Missing JWT Authorization header.\"}");
+                    socket.close();
+                    return;
+                }
+
+                verifiedUsername = AuthHelper.validateJWTAndGetUsername(authHeader.substring(7));
+                user = Database.users.get(verifiedUsername);
+                if (verifiedUsername == null || user == null) {
+                    sendJsonResponse(out, 403, "{\"status\":\"error\",\"message\":\"Invalid session.\"}");
+                    socket.close();
+                    return;
+                }
+
+                int contentLen = Integer.parseInt(headers.getOrDefault("Content-Length", "0"));
+                String body = getRequestBody(in, contentLen);
+                int amount = 0;
+                try {
+                    String search = "\"amount\":";
+                    int start = body.indexOf(search);
+                    if (start != -1) {
+                        start += search.length();
+                        int end = body.indexOf("}", start);
+                        int comma = body.indexOf(",", start);
+                        if (comma != -1 && comma < end) end = comma;
+                        amount = Integer.parseInt(body.substring(start, end).trim());
+                    }
+                } catch (Exception e) {
+                    amount = 0;
+                }
+
+                // Clamp to prevent abuse
+                final int MAX_EARN = 500;
+                final int MAX_SPEND = 15000;
+                if (amount > MAX_EARN || amount < -MAX_SPEND || amount == 0) {
+                    sendJsonResponse(out, 400, "{\"status\":\"error\",\"message\":\"Invalid amount.\"}");
+                    socket.close();
+                    return;
+                }
+
+                // Prevent spending more than available balance (balance = 100 + profit)
+                int currentBalance = 100 + user.profit;
+                if (amount < 0 && currentBalance + amount < 0) {
+                    sendJsonResponse(out, 400, "{\"status\":\"error\",\"message\":\"Insufficient balance.\"}");
+                    socket.close();
+                    return;
+                }
+
+                user.profit += amount;
+                Database.save();
+
+                sendJsonResponse(out, 200, "{\"status\":\"success\",\"message\":\"" + (100 + user.profit) + "\"}");
+                socket.close();
+                return;
+            }
+
+            // Route: Account Deletion
+            if (path.startsWith("/api/user/delete") && method.equals("POST")) {
+                if (authHeader == null || !authHeader.startsWith("Bearer")) {
+                    sendJsonResponse(out, 403, "{\"status\":\"error\",\"message\":\"Missing JWT Authorization header.\"}");
+                    socket.close();
+                    return;
+                }
+
+                verifiedUsername = AuthHelper.validateJWTAndGetUsername(authHeader.substring(7));
+                if (verifiedUsername == null) {
+                    sendJsonResponse(out, 403, "{\"status\":\"error\",\"message\":\"Invalid JWT Token.\"}");
+                    socket.close();
+                    return;
+                }
+
+                Database.users.remove(verifiedUsername);
+
+                for (Database.UserData u : Database.users.values()) {
+                    if (u.friends != null) {
+                        u.friends.remove(verifiedUsername);
+                    }
+                }
+
+                Database.save();
+
+                sendJsonResponse(out, 200, "{\"status\":\"success\",\"message\":\"Account deleted successfully.\"}");
+                socket.close();
+                return;
+            }
+
+            // Route 8: Static File Server
             if (method.equals("GET")) {
                 if (path.equals("/")) {
                     path = "/index.html";

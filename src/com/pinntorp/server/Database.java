@@ -1,4 +1,4 @@
-package com.pinntorp.Server;
+package com.pinntorp.server;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -15,34 +15,43 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Super lightweight JSON Database manager for users, powered by Gson.
+ */
 public class Database {
     private static final String DB_FILE = Env.get("DB_PATH", "data/users.json");
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
+    // In-memory cache of users: Username -> UserData
     public static Map<String, UserData> users = new HashMap<>();
 
     public static class GameLog {
         public String gameName;
         public int profit;
         public long timestamp;
-        public String metadata;
+        public String metadata; // e.g. "Guessed 2, Rolled 4"
 
-        public GameLog() {
-        }
+        public GameLog() {} // Empty constructor for Gson
     }
 
     public static class UserData {
         public String username;
-        public String role;
-        public String salt;
-        public String hash;
+        public String role; // "admin" or "user"
+        public String salt; // Base64 Secure Random
+        public String hash; // Base64 SHA-256 Hash
+
+        // High-Level Statistics
         public int gamesPlayed;
         public int wins;
         public int losses;
         public int profit;
+
+        // Social Features
         public List<String> friends = new ArrayList<>();
         public List<String> receivedFriendRequests = new ArrayList<>();
         public List<String> sentFriendRequests = new ArrayList<>();
+
+        // Game Logs
         public List<GameLog> gameLogs = new ArrayList<>();
 
         public UserData(String username, String role, String salt, String hash) {

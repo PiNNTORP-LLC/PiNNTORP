@@ -30,26 +30,23 @@ for /f "tokens=5" %%a in ('netstat -aon ^| findstr :%PORT% ^| findstr LISTENING'
     taskkill /F /PID %%a /T >nul 2>nul
 )
 
-echo Compiling the game server (pinn-api)...
-pushd "%ROOT%\pinn-api"
-if exist build rmdir /s /q build
-mkdir build
-dir /s /B *.java > sources.txt
-javac -cp "lib/*;build" -d build @sources.txt
+echo Compiling the game server...
+if exist "%ROOT%\build" rmdir /s /q "%ROOT%\build"
+mkdir "%ROOT%\build"
+dir /s /B "%ROOT%\src\com\pinntorp\server\*.java" "%ROOT%\src\com\pinntorp\games\*.java" > "%ROOT%\sources.txt" 2>nul
+javac -cp "%ROOT%\lib\*;%ROOT%\build" -d "%ROOT%\build" @"%ROOT%\sources.txt"
 set "JAVAC_EXIT=%ERRORLEVEL%"
-del sources.txt >nul 2>nul
+del "%ROOT%\sources.txt" >nul 2>nul
 
 if not "%JAVAC_EXIT%"=="0" (
   echo.
-  echo ERROR: The pinn-api Java compilation failed.
-  popd
+  echo ERROR: Java compilation failed.
   pause
   exit /b 1
 )
-popd
 
 echo Launching the unified server (Web/API/Auth)...
-start "PiNNTORP Server" cmd /k "cd /d ""%ROOT%\pinn-api"" && java -cp ""lib/*;build"" com.pinntorp.Server.Main"
+start "PiNNTORP Server" cmd /k "cd /d ""%ROOT%"" && java -cp ""lib/*;build"" com.pinntorp.server.Main"
 
 echo Waiting for server to respond at %URL%...
 call :wait_for_http "%URL%" 15
