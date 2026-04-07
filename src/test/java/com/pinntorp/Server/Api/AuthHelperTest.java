@@ -1,4 +1,4 @@
-package com.pinntorp.Server.Api;
+package com.pinntorp.server.Api;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;

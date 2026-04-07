@@ -34,7 +34,7 @@
     </dependencies>
 
     <build>
-        <sourceDirectory>pinn-api</sourceDirectory>
+        <sourceDirectory>src</sourceDirectory>
         <testSourceDirectory>src/test/java</testSourceDirectory>
         <plugins>
             <plugin>
@@ -46,6 +46,11 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.11.0</version>
+                <configuration>
+                    <excludes>
+                        <exclude>test/**</exclude>
+                    </excludes>
+                </configuration>
             </plugin>
         </plugins>
     </build>

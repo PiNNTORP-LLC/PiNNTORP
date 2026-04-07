@@ -7,12 +7,9 @@ WORKDIR /app
 # Copy all project files
 COPY . .
 
-# Move into the pinn-api folder to compile
-WORKDIR /app/pinn-api
-
-# Compile the server using the method in start-server.sh
+# Compile the server from the consolidated src folder
 RUN mkdir -p build && \
-    find . -name "*.java" > sources.txt && \
+    find src/com/pinntorp/server src/com/pinntorp/games -name "*.java" 2>/dev/null > sources.txt && \
     javac -cp "lib/*:build" -d build @sources.txt && \
     rm sources.txt
 
@@ -20,14 +17,13 @@ RUN mkdir -p build && \
 FROM eclipse-temurin:17-jre-focal
 
 # Set working directory
-WORKDIR /app/pinn-api
+WORKDIR /app
 
 # Copy the compiled build and libraries
-COPY --from=build /app/pinn-api/build /app/pinn-api/build
-COPY --from=build /app/pinn-api/lib /app/pinn-api/lib
+COPY --from=build /app/build /app/build
+COPY --from=build /app/lib /app/lib
 
 # Copy static assets (index.html, css, js) from the root
-# The Java Main.java expects static assets to be at user.dir + "/.."
 COPY --from=build /app/*.html /app/
 COPY --from=build /app/css /app/css
 COPY --from=build /app/js /app/js
@@ -40,4 +36,4 @@ ENV PORT=8080
 EXPOSE 8080
 
 # Run the server
-CMD ["java", "-cp", "lib/*:build", "com.pinntorp.Server.Main"]
+CMD ["java", "-cp", "lib/*:build", "com.pinntorp.server.Main"]

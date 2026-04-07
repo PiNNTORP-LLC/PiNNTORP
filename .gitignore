@@ -147,6 +147,7 @@ __pycache__/
 *.class
 pinn-api/build/
 build/
+target/
 
 # Database
 users.json
